@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>body{margin:0;background:#f2f2f3;font-family:Barlow,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#416180}a:hover{color:#2c455d}*{box-sizing:border-box}::-webkit-scrollbar{width:0;height:0}</style></helmet>
+
+<section style="padding:44px 48px 40px;display:flex;flex-direction:column;gap:34px">
+
+<div style="display:flex;align-items:baseline;gap:12px">
+<span style="font:600 10px/1 'IBM Plex Mono',monospace;padding:4px 7px;background:#1d1f20;color:#f2f2f3">1</span>
+<span style="font:600 14px/1.2 'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#1d1f20">Watchlist app — dark blueprint · v1</span>
+<span style="font:400 12px/1.4 Barlow,sans-serif;color:rgba(29,31,32,.55)">Industry design system, inverted to a dark ground</span>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+
+<div style="flex:none;width:352px;display:flex;flex-direction:column;gap:20px">
+<div style="position:relative;border:1px solid rgba(29,31,32,.18);padding:20px 22px 22px">
+<i style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:rgba(29,31,32,.5)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;top:-6px;right:-6px;width:11px;height:11px;color:rgba(29,31,32,.5)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;bottom:-6px;left:-6px;width:11px;height:11px;color:rgba(29,31,32,.5)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:rgba(29,31,32,.5)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#416180;margin-bottom:14px">DESIGN NOTES</div>
+<div style="font:600 17px/1.15 'Barlow Condensed',sans-serif;letter-spacing:-.01em;color:#1d1f20;margin-bottom:8px">Navigation: one scrolling home, detail pushed on top</div>
+<p style="font:400 13px/1.5 Barlow,sans-serif;color:rgba(29,31,32,.72);margin:0 0 16px">No tab bar. Home scrolls <strong>Movers → Today's digest → Watchlist table</strong>. Tapping any ticker anywhere pushes the detail screen; the digest card opens the digest timeline. Back is the Android gesture / header chevron — a two-level stack, nothing to get lost in.</p>
+<div style="font:600 17px/1.15 'Barlow Condensed',sans-serif;letter-spacing:-.01em;color:#1d1f20;margin-bottom:8px">Score visualisation</div>
+<p style="font:400 13px/1.5 Barlow,sans-serif;color:rgba(29,31,32,.72);margin:0 0 16px">Concentric dual ring: <strong>outer = technical composite</strong> (−3…+7, filled from the −3 origin), <strong>inner = fundamentals percentile</strong> vs same-industry peers. Same glyph at 3 sizes — 26px in table rows, 34px in mover cards, 92px with numeric read-out on detail. On detail it expands into the signals that produced it.</p>
+<div style="font:600 17px/1.15 'Barlow Condensed',sans-serif;letter-spacing:-.01em;color:#1d1f20;margin-bottom:8px">Colour discipline</div>
+<p style="font:400 13px/1.5 Barlow,sans-serif;color:rgba(29,31,32,.72);margin:0">Industry is a mono steel system, so gain/loss is carried by contrast, not by red/green — with one stated deviation: the falling triangle is a dark red <span style="font:500 12px 'IBM Plex Mono',monospace;color:#416180">#c2503f</span>, the only non-steel colour in the design. Up = bright steel <span style="font:500 12px 'IBM Plex Mono',monospace;color:#416180">#b5d9fd</span> with ▲; on a down move the figure itself stays dimmed neutral <span style="font:500 12px 'IBM Plex Mono',monospace;color:#5d5d60">#b7b7ba</span> and only the ▼ turns red. Direction therefore reads from glyph, sign and contrast together, which survives colour-blind and bright-sunlight cases.</p>
+</div>
+
+<div style="border:1px solid rgba(29,31,32,.18);padding:16px 18px">
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#416180;margin-bottom:12px">ASSUMPTIONS — CORRECT ME</div>
+<div style="display:flex;flex-direction:column;gap:9px;font:400 12.5px/1.45 Barlow,sans-serif;color:rgba(29,31,32,.72)">
+<div>· 38 tickers → one flat table, no sector grouping or virtual scroll needed. Sector is a filter chip instead.</div>
+<div>· <span style="font:500 12px 'IBM Plex Mono',monospace">fundamentals_score</span> is rendered as a 0–100 peer percentile; if it's actually a −3…+7 style scale I'll mirror the technical ring.</div>
+<div>· Prices are 20-min delayed; the header carries a live "updated 4m ago" stamp so stale data is never ambiguous.</div>
+<div>· No buy/sell, no watchlist editing in v1 — the watchlist is owned by the pipeline.</div>
+<div>· v2 push alerts get a bell in the header and an alert row style in the digest timeline; stubbed, not designed here.</div>
+</div>
+</div>
+</div>
+
+<div style="flex:none;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;font:400 11px/1.3 Barlow,sans-serif;color:rgba(29,31,32,.55)"><span style="font:600 10.5px 'IBM Plex Mono',monospace;padding:3px 7px;background:rgba(29,31,32,.08);color:#1d1f20">1a</span>Live prototype — tap rows, chips, digest days</div>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx" dark="{{ true }}" hint-size="412px,892px">
+<div style="min-height:100%;background:#101315;font-family:Barlow,system-ui,sans-serif;color:#f2f2f3;padding-bottom:24px">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div>
+<div style="display:flex;align-items:flex-end;justify-content:space-between;padding:14px 16px 12px;border-bottom:1px solid rgba(242,242,243,.13)">
+<div>
+<div style="font:600 21px/1 'Barlow Condensed',sans-serif;letter-spacing:.02em;text-transform:uppercase">Watchtower</div>
+<div style="font:400 11px/1.3 'IBM Plex Mono',monospace;color:#8b9095;margin-top:4px">38 tickers · updated {{ updatedAgo }}</div>
+</div>
+<div style="display:flex;gap:6px">
+<div onClick="{{ noop }}" style="width:34px;height:34px;border:1px solid rgba(242,242,243,.14);display:flex;align-items:center;justify-content:center;color:#94bce3;font:400 15px 'IBM Plex Mono',monospace;cursor:pointer" style-hover="background:rgba(148,188,227,.1)">⌕</div>
+<div onClick="{{ noop }}" style="width:34px;height:34px;border:1px solid rgba(242,242,243,.14);display:flex;align-items:center;justify-content:center;color:#8b9095;font:400 14px Barlow,sans-serif;cursor:pointer" style-hover="background:rgba(148,188,227,.1)">☰</div>
+</div>
+</div>
+
+<div style="padding:18px 16px 4px;display:flex;align-items:baseline;justify-content:space-between">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095">Biggest movers · 20 min</div>
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#94bce3">≥3% RULE</div>
+</div>
+<div style="display:flex;gap:10px;overflow-x:auto;padding:12px 16px 4px">
+<sc-for list="{{ movers }}" as="m" hint-placeholder-count="3">
+<div onClick="{{ m.open }}" style="flex:none;width:146px;border:1px solid rgba(242,242,243,.14);padding:11px 12px 12px;cursor:pointer" style-hover="border-color:rgba(89,128,166,.6);background:rgba(148,188,227,.07)">
+<div style="display:flex;justify-content:space-between;align-items:flex-start">
+<div>
+<div style="font:600 16px/1 Barlow,sans-serif;letter-spacing:.04em">{{ m.sym }}</div>
+<div style="font:400 10px/1.3 'IBM Plex Mono',monospace;color:#8b9095;margin-top:4px">{{ m.price }}</div>
+</div>
+<svg viewBox="0 0 40 40" style="width:34px;height:34px;transform:rotate(135deg)">
+<circle cx="20" cy="20" r="17" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="3"></circle>
+<circle cx="20" cy="20" r="17" fill="none" stroke="#94bce3" stroke-width="3" stroke-dasharray="{{ m.techDash }}"></circle>
+<circle cx="20" cy="20" r="11.5" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="3"></circle>
+<circle cx="20" cy="20" r="11.5" fill="none" stroke="#4d8fd6" stroke-width="3" stroke-dasharray="{{ m.fundDash }}"></circle>
+</svg>
+</div>
+<div style="font:600 19px/1 Barlow,sans-serif;margin-top:12px;color:{{ m.dirColor }}"><span style="color:{{ m.arrowColor }}">{{ m.arrow }}</span>{{ m.chgNum }}</div>
+<div style="font:400 9.5px/1.3 'IBM Plex Mono',monospace;color:#8b9095;margin-top:6px;letter-spacing:.04em">T {{ m.tech }} · F {{ m.fund }}</div>
+</div>
+</sc-for>
+</div>
+
+<div style="padding:22px 16px 0">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095;margin-bottom:12px">Today's digest</div>
+<div onClick="{{ openDigest }}" style="position:relative;border:1px solid rgba(89,128,166,.4);padding:15px 15px 14px;cursor:pointer;background:rgba(148,188,227,.06)" style-hover="background:rgba(148,188,227,.11)">
+<i style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:rgba(89,128,166,.85)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;top:-6px;right:-6px;width:11px;height:11px;color:rgba(89,128,166,.85)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;bottom:-6px;left:-6px;width:11px;height:11px;color:rgba(89,128,166,.85)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:rgba(89,128,166,.85)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#94bce3;letter-spacing:.1em">30 AUG · 07:40</div>
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#8b9095">6 FLAGGED</div>
+</div>
+<p style="font:400 13.5px/1.5 Barlow,sans-serif;color:#dfe3e6;margin:10px 0 12px">Momentum rotated into robotics: three names crossed SMA50 on above-average volume. Biotech stayed weak into the ASCO read-outs; two holdings are now oversold on RSI but fundamentals are unchanged.</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<sc-for list="{{ digestChips }}" as="d" hint-placeholder-count="4">
+<div onClick="{{ d.open }}" style="border:1px solid rgba(242,242,243,.16);padding:3px 7px;font:500 11px/1.3 'IBM Plex Mono',monospace;color:#dfe3e6" style-hover="border-color:#94bce3;color:#94bce3">{{ d.label }}</div>
+</sc-for>
+</div>
+<div style="font:400 11px/1 'IBM Plex Mono',monospace;color:#94bce3;margin-top:14px">ALL DIGESTS →</div>
+</div>
+</div>
+
+<div style="padding:24px 0 0">
+<div style="display:flex;align-items:baseline;justify-content:space-between;padding:0 16px 12px">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095">Watchlist</div>
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ countText }}</div>
+</div>
+<div style="display:flex;gap:6px;overflow-x:auto;padding:0 16px 12px">
+<sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+<div onClick="{{ f.pick }}" style="flex:none;border:1px solid rgba(242,242,243,.14);padding:5px 10px;font:500 11px/1.3 'IBM Plex Mono',monospace;letter-spacing:.04em;cursor:pointer;color:#8b9095;background:{{ f.bg }};border-color:{{ f.bc }};color:{{ f.fg }}" style-hover="border-color:rgba(89,128,166,.6)">{{ f.label }}</div>
+</sc-for>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 74px 62px 38px;gap:0;align-items:center;padding:0 16px 7px;border-bottom:1px solid rgba(242,242,243,.14)">
+<div onClick="{{ sortSym }}" style="font:600 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;color:{{ hSym }};cursor:pointer">TICKER {{ aSym }}</div>
+<div onClick="{{ sortPrice }}" style="font:600 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-align:right;color:{{ hPrice }};cursor:pointer">PRICE {{ aPrice }}</div>
+<div onClick="{{ sortChg }}" style="font:600 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-align:right;color:{{ hChg }};cursor:pointer">%CHG {{ aChg }}</div>
+<div onClick="{{ sortScore }}" style="font:600 9.5px/1 'IBM Plex Mono',monospace;letter-spacing:.12em;text-align:right;color:{{ hScore }};cursor:pointer">T/F {{ aScore }}</div>
+</div>
+
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="9">
+<div onClick="{{ r.open }}" style="display:grid;grid-template-columns:1fr 74px 62px 38px;align-items:center;padding:9px 16px;border-bottom:1px solid rgba(242,242,243,.08);cursor:pointer" style-hover="background:rgba(148,188,227,.08)">
+<div style="min-width:0">
+<div style="display:flex;align-items:center;gap:6px">
+<span style="font:600 14.5px/1.15 Barlow,sans-serif;letter-spacing:.03em">{{ r.sym }}</span>
+<span style="font:400 8.5px/1 'IBM Plex Mono',monospace;color:#94bce3;border:1px solid rgba(89,128,166,.35);padding:2px 4px">{{ r.sector }}</span>
+<span style="font:500 9px/1 'IBM Plex Mono',monospace;color:#94bce3">{{ r.flag }}</span>
+</div>
+<div style="font:400 10.5px/1.3 Barlow,sans-serif;color:#8b9095;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.name }}</div>
+</div>
+<div style="text-align:right;font:500 13px/1.2 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums">{{ r.price }}</div>
+<div style="text-align:right;font:500 12.5px/1.2 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:{{ r.dirColor }}"><span style="color:{{ r.arrowColor }}">{{ r.arrow }}</span>{{ r.chgNum }}</div>
+<div style="display:flex;justify-content:flex-end;align-items:center">
+<svg viewBox="0 0 40 40" style="width:26px;height:26px;transform:rotate(135deg)">
+<circle cx="20" cy="20" r="17" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="4"></circle>
+<circle cx="20" cy="20" r="17" fill="none" stroke="#94bce3" stroke-width="4" stroke-dasharray="{{ r.techDash }}"></circle>
+<circle cx="20" cy="20" r="10.5" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="4"></circle>
+<circle cx="20" cy="20" r="10.5" fill="none" stroke="#4d8fd6" stroke-width="4" stroke-dasharray="{{ r.fundDash }}"></circle>
+</svg>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(242,242,243,.13)">
+<div onClick="{{ goHome }}" style="width:30px;height:30px;border:1px solid rgba(242,242,243,.14);display:flex;align-items:center;justify-content:center;color:#94bce3;font:400 14px Barlow,sans-serif;cursor:pointer" style-hover="background:rgba(148,188,227,.1)">‹</div>
+<div style="flex:1;min-width:0">
+<div style="display:flex;align-items:center;gap:7px">
+<span style="font:600 18px/1 Barlow,sans-serif;letter-spacing:.03em">{{ d.sym }}</span>
+<span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#94bce3;border:1px solid rgba(89,128,166,.35);padding:2px 5px">{{ d.sector }}</span>
+</div>
+<div style="font:400 10.5px/1.3 Barlow,sans-serif;color:#8b9095;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.name }}</div>
+</div>
+</div>
+
+<div style="padding:16px 16px 0;display:flex;align-items:flex-end;justify-content:space-between">
+<div>
+<div style="font:600 34px/1 Barlow,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.01em">{{ d.price }}</div>
+<div style="display:flex;gap:8px;align-items:baseline;margin-top:6px">
+<span style="font:500 14px/1 'IBM Plex Mono',monospace;color:{{ d.dirColor }}"><span style="color:{{ d.arrowColor }}">{{ d.arrow }}</span>{{ d.chgNum }}</span>
+<span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ d.abs }} today</span>
+</div>
+</div>
+<div style="text-align:right;font:400 10px/1.5 'IBM Plex Mono',monospace;color:#8b9095">DELAYED 20M<br>{{ updatedAgo }}</div>
+</div>
+
+<div style="padding:16px 16px 0">
+<svg viewBox="0 0 344 132" preserveAspectRatio="none" style="width:100%;height:132px;display:block">
+<line x1="0" y1="1" x2="344" y2="1" stroke="rgba(242,242,243,.08)" stroke-width="1"></line>
+<line x1="0" y1="66" x2="344" y2="66" stroke="rgba(242,242,243,.08)" stroke-width="1"></line>
+<line x1="0" y1="131" x2="344" y2="131" stroke="rgba(242,242,243,.08)" stroke-width="1"></line>
+<path d="{{ chartArea }}" fill="rgba(148,188,227,.12)"></path>
+<polyline points="{{ chartLine }}" fill="none" stroke="#94bce3" stroke-width="1.6" stroke-linejoin="round"></polyline>
+<polyline points="{{ smaLine }}" fill="none" stroke="rgba(242,242,243,.28)" stroke-width="1" stroke-dasharray="3 3"></polyline>
+</svg>
+<div style="display:flex;justify-content:space-between;margin-top:6px">
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ chartLo }}</span>
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:rgba(242,242,243,.45)">— — SMA50</span>
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ chartHi }}</span>
+</div>
+<div style="display:flex;gap:6px;margin-top:12px">
+<sc-for list="{{ ranges }}" as="rg" hint-placeholder-count="4">
+<div onClick="{{ rg.pick }}" style="flex:1;text-align:center;border:1px solid rgba(242,242,243,.14);padding:6px 0;font:500 11px/1 'IBM Plex Mono',monospace;letter-spacing:.06em;cursor:pointer;color:#8b9095;background:{{ rg.bg }};border-color:{{ rg.bc }};color:{{ rg.fg }}" style-hover="border-color:rgba(89,128,166,.6)">{{ rg.label }}</div>
+</sc-for>
+</div>
+</div>
+
+<div style="padding:26px 16px 0">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095;margin-bottom:14px">Scores</div>
+<div style="position:relative;border:1px solid rgba(242,242,243,.14);padding:18px 16px 14px">
+<i style="position:absolute;top:-6px;left:-6px;width:11px;height:11px;color:rgba(242,242,243,.45)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;top:-6px;right:-6px;width:11px;height:11px;color:rgba(242,242,243,.45)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;bottom:-6px;left:-6px;width:11px;height:11px;color:rgba(242,242,243,.45)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<i style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px;color:rgba(242,242,243,.45)" style-before="content:'';position:absolute;left:5px;top:0;width:1px;height:100%;background:currentColor" style-after="content:'';position:absolute;top:5px;left:0;width:100%;height:1px;background:currentColor"></i>
+<div style="display:flex;gap:18px;align-items:center">
+<svg viewBox="0 0 40 40" style="width:92px;height:92px;flex:none;transform:rotate(135deg)">
+<circle cx="20" cy="20" r="17.5" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="3.4"></circle>
+<circle cx="20" cy="20" r="17.5" fill="none" stroke="#94bce3" stroke-width="3.4" stroke-dasharray="{{ d.techDash }}"></circle>
+<circle cx="20" cy="20" r="11.6" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="3.4"></circle>
+<circle cx="20" cy="20" r="11.6" fill="none" stroke="#4d8fd6" stroke-width="3.4" stroke-dasharray="{{ d.fundDash }}"></circle>
+</svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<div>
+<div style="display:flex;align-items:baseline;gap:7px"><span style="width:7px;height:7px;background:#94bce3;display:inline-block"></span><span style="font:600 22px/1 Barlow,sans-serif;font-variant-numeric:tabular-nums">{{ d.tech }}</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b9095">/ +7 technical</span></div>
+<div style="font:400 11px/1.4 Barlow,sans-serif;color:#8b9095;margin-top:4px">{{ d.techVerdict }}</div>
+</div>
+<div>
+<div style="display:flex;align-items:baseline;gap:7px"><span style="width:7px;height:7px;background:#4d8fd6;display:inline-block"></span><span style="font:600 22px/1 Barlow,sans-serif;font-variant-numeric:tabular-nums">{{ d.fund }}</span><span style="font:400 11px/1 'IBM Plex Mono',monospace;color:#8b9095">pct vs peers</span></div>
+<div style="font:400 11px/1.4 Barlow,sans-serif;color:#8b9095;margin-top:4px">{{ d.fundVerdict }}</div>
+</div>
+</div>
+</div>
+<div onClick="{{ toggleSignals }}" style="margin-top:16px;border-top:1px solid rgba(242,242,243,.13);padding-top:11px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:#94bce3">
+<span style="font:500 10.5px/1 'IBM Plex Mono',monospace;letter-spacing:.1em">{{ signalsLabel }}</span>
+<span style="font:400 12px/1 Barlow,sans-serif">{{ signalsCaret }}</span>
+</div>
+<sc-if value="{{ signalsOpen }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;margin-top:10px">
+<sc-for list="{{ signals }}" as="s" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:1fr auto 30px;gap:10px;align-items:center;padding:6.5px 0;border-bottom:1px solid rgba(242,242,243,.07)">
+<span style="font:400 12px/1.2 Barlow,sans-serif;color:#dfe3e6">{{ s.label }}</span>
+<span style="font:400 11px/1.2 'IBM Plex Mono',monospace;color:#8b9095;font-variant-numeric:tabular-nums">{{ s.value }}</span>
+<span style="text-align:right;font:500 11px/1.2 'IBM Plex Mono',monospace;color:{{ s.color }}">{{ s.pts }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+
+<div style="padding:26px 16px 0">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095;margin-bottom:6px">Fundamentals vs industry peers</div>
+<div style="font:400 10px/1.4 'IBM Plex Mono',monospace;color:#94bce3;margin-bottom:14px">{{ d.peerNote }}</div>
+<sc-for list="{{ fundamentals }}" as="f" hint-placeholder-count="4">
+<div style="margin-bottom:14px">
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<span style="font:400 12px/1.2 Barlow,sans-serif;color:#dfe3e6">{{ f.label }}</span>
+<span style="font:500 12px/1.2 'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;color:{{ f.color }}">{{ f.self }}<span style="color:#8b9095"> vs {{ f.peer }}</span></span>
+</div>
+<div style="position:relative;height:5px;background:rgba(242,242,243,.09);margin-top:6px">
+<div style="position:absolute;left:0;top:0;bottom:0;background:#94bce3;width:{{ f.selfW }}"></div>
+<div style="position:absolute;top:-2px;bottom:-2px;width:1px;background:rgba(242,242,243,.65);left:{{ f.peerW }}"></div>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="padding:12px 16px 0">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095;margin-bottom:14px">Earnings</div>
+<div style="display:flex;gap:12px;border:1px solid rgba(242,242,243,.14);padding:14px">
+<div style="flex:none;width:104px">
+<div style="font:400 9.5px/1.3 'IBM Plex Mono',monospace;color:#8b9095">FWD EPS FY27</div>
+<div style="font:600 24px/1.1 Barlow,sans-serif;font-variant-numeric:tabular-nums;margin-top:5px">{{ d.fwdEps }}</div>
+<div style="font:400 10px/1.3 'IBM Plex Mono',monospace;color:#94bce3;margin-top:4px">{{ d.epsGrowth }}</div>
+</div>
+<div style="flex:1;border-left:1px solid rgba(242,242,243,.13);padding-left:14px">
+<div style="font:400 9.5px/1.3 'IBM Plex Mono',monospace;color:#8b9095;margin-bottom:10px">SURPRISE, LAST 4Q</div>
+<div style="display:flex;gap:8px;align-items:flex-end;height:56px">
+<sc-for list="{{ eps }}" as="q" hint-placeholder-count="4">
+<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px;height:100%">
+<span style="font:500 9.5px/1 'IBM Plex Mono',monospace;color:{{ q.color }}">{{ q.pct }}</span>
+<div style="width:100%;background:{{ q.color }};height:{{ q.h }}"></div>
+<span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ q.q }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div style="padding:26px 16px 0">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095;margin-bottom:12px">AI analysis</div>
+<div style="border-left:2px solid #94bce3;padding:2px 0 2px 13px">
+<p style="font:400 13.5px/1.55 Barlow,sans-serif;color:#dfe3e6;margin:0 0 10px">{{ d.ai1 }}</p>
+<p style="font:400 13.5px/1.55 Barlow,sans-serif;color:#dfe3e6;margin:0">{{ d.ai2 }}</p>
+<div style="font:400 10px/1 'IBM Plex Mono',monospace;color:#8b9095;margin-top:12px">GENERATED {{ d.aiStamp }}</div>
+</div>
+</div>
+
+<div style="padding:26px 16px 0">
+<div style="font:600 11px/1 'Barlow Condensed',sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#8b9095;margin-bottom:6px">Relevant news</div>
+<sc-for list="{{ news }}" as="n" hint-placeholder-count="4">
+<div style="padding:13px 0;border-bottom:1px solid rgba(242,242,243,.08)">
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:5px">
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#94bce3;letter-spacing:.06em">{{ n.src }}</span>
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ n.time }}</span>
+<span style="font:400 9px/1 'IBM Plex Mono',monospace;color:#8b9095;border:1px solid rgba(242,242,243,.14);padding:2px 4px">REL {{ n.rel }}</span>
+</div>
+<div style="font:400 13.5px/1.4 Barlow,sans-serif;color:#dfe3e6;text-wrap:pretty">{{ n.title }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDigest }}" hint-placeholder-val="{{ false }}">
+<div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(242,242,243,.13)">
+<div onClick="{{ goHome }}" style="width:30px;height:30px;border:1px solid rgba(242,242,243,.14);display:flex;align-items:center;justify-content:center;color:#94bce3;font:400 14px Barlow,sans-serif;cursor:pointer" style-hover="background:rgba(148,188,227,.1)">‹</div>
+<div>
+<div style="font:600 19px/1 'Barlow Condensed',sans-serif;letter-spacing:.03em;text-transform:uppercase">Digest history</div>
+<div style="font:400 10px/1.3 'IBM Plex Mono',monospace;color:#8b9095;margin-top:3px">DAILY 07:40 · 214 ARCHIVED</div>
+</div>
+</div>
+<sc-for list="{{ digests }}" as="g" hint-placeholder-count="4">
+<div style="border-bottom:1px solid rgba(242,242,243,.09)">
+<div onClick="{{ g.toggle }}" style="display:grid;grid-template-columns:52px 1fr 18px;gap:12px;align-items:start;padding:15px 16px;cursor:pointer" style-hover="background:rgba(148,188,227,.07)">
+<div style="text-align:center;border-right:1px solid rgba(242,242,243,.13);padding-right:8px">
+<div style="font:600 20px/1 Barlow,sans-serif;font-variant-numeric:tabular-nums">{{ g.day }}</div>
+<div style="font:400 9px/1.3 'IBM Plex Mono',monospace;color:#8b9095;margin-top:3px">{{ g.mon }}</div>
+</div>
+<div style="min-width:0">
+<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:5px">
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#94bce3">{{ g.count }} FLAGGED</span>
+<span style="font:400 9.5px/1 'IBM Plex Mono',monospace;color:#8b9095">{{ g.spikes }}</span>
+</div>
+<div style="font:400 13px/1.45 Barlow,sans-serif;color:#dfe3e6;text-wrap:pretty">{{ g.headline }}</div>
+</div>
+<div style="text-align:right;font:400 12px/1 Barlow,sans-serif;color:#94bce3">{{ g.caret }}</div>
+</div>
+<sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+<div style="padding:0 16px 18px 80px">
+<p style="font:400 12.5px/1.55 Barlow,sans-serif;color:#b9bfc4;margin:0 0 14px;text-wrap:pretty">{{ g.body }}</p>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+<div onClick="{{ it.open }}" style="display:grid;grid-template-columns:1fr 58px 46px;gap:8px;align-items:center;padding:8px 0;border-top:1px solid rgba(242,242,243,.08);cursor:pointer" style-hover="background:rgba(148,188,227,.07)">
+<div style="min-width:0">
+<span style="font:600 13px/1.2 Barlow,sans-serif;letter-spacing:.03em">{{ it.sym }}</span>
+<div style="font:400 10.5px/1.35 Barlow,sans-serif;color:#8b9095;margin-top:2px">{{ it.why }}</div>
+</div>
+<span style="text-align:right;font:500 11.5px/1.2 'IBM Plex Mono',monospace;color:{{ it.dirColor }}"><span style="color:{{ it.arrowColor }}">{{ it.arrow }}</span>{{ it.chg }}</span>
+<span style="text-align:right;font:400 10px/1.2 'IBM Plex Mono',monospace;color:#8b9095">{{ it.scores }}</span>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="padding:18px 16px;text-align:center;font:400 10px/1 'IBM Plex Mono',monospace;color:#8b9095">LOAD OLDER →</div>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+</div>
+
+<div style="flex:none;width:330px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:baseline;gap:9px;font:400 11px/1.3 Barlow,sans-serif;color:rgba(29,31,32,.55)"><span style="font:600 10.5px 'IBM Plex Mono',monospace;padding:3px 7px;background:rgba(29,31,32,.08);color:#1d1f20">1b</span>Component & navigation spec</div>
+<div style="background:#101315;border:1px solid rgba(29,31,32,.18);padding:20px 18px;display:flex;flex-direction:column;gap:24px;color:#f2f2f3">
+<div>
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#94bce3;margin-bottom:14px">DUAL SCORE RING</div>
+<div style="display:flex;gap:16px;align-items:center">
+<svg viewBox="0 0 40 40" style="width:80px;height:80px;flex:none;transform:rotate(135deg)">
+<circle cx="20" cy="20" r="17.5" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="3.4"></circle>
+<circle cx="20" cy="20" r="17.5" fill="none" stroke="#94bce3" stroke-width="3.4" stroke-dasharray="77 110"></circle>
+<circle cx="20" cy="20" r="11.6" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="3.4"></circle>
+<circle cx="20" cy="20" r="11.6" fill="none" stroke="#4d8fd6" stroke-width="3.4" stroke-dasharray="42 73"></circle>
+</svg>
+<div style="font:400 11.5px/1.6 Barlow,sans-serif;color:#b9bfc4">
+<div><span style="color:#94bce3">Outer</span> — technical −3…+7, 270° sweep, gap at bottom-left = origin.</div>
+<div style="margin-top:6px"><span style="color:#4d8fd6">Inner</span> — fundamentals percentile vs same-sector peers.</div>
+<div style="margin-top:6px;color:#8b9095">Never below 26px; numbers always shown alongside in dense rows.</div>
+</div>
+</div>
+</div>
+<div>
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#94bce3;margin-bottom:12px">COMPACT ROW — 52px</div>
+<div style="display:grid;grid-template-columns:1fr 66px 56px 30px;align-items:center;padding:9px 0;border-top:1px solid rgba(242,242,243,.14);border-bottom:1px solid rgba(242,242,243,.14)">
+<div><div style="display:flex;gap:6px;align-items:center"><span style="font:600 14.5px/1.15 Barlow,sans-serif;letter-spacing:.03em">NVDA</span><span style="font:400 8.5px/1 'IBM Plex Mono',monospace;color:#94bce3;border:1px solid rgba(89,128,166,.35);padding:2px 4px">TECH</span></div><div style="font:400 10.5px/1.3 Barlow,sans-serif;color:#8b9095;margin-top:3px">NVIDIA Corp</div></div>
+<div style="text-align:right;font:500 13px 'IBM Plex Mono',monospace">184.22</div>
+<div style="text-align:right;font:500 12.5px 'IBM Plex Mono',monospace;color:#b5d9fd">▲2.41%</div>
+<div style="display:flex;justify-content:flex-end"><svg viewBox="0 0 40 40" style="width:26px;height:26px;transform:rotate(135deg)"><circle cx="20" cy="20" r="17" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="4"></circle><circle cx="20" cy="20" r="17" fill="none" stroke="#94bce3" stroke-width="4" stroke-dasharray="85 107"></circle><circle cx="20" cy="20" r="10.5" fill="none" stroke="rgba(242,242,243,.14)" stroke-width="4"></circle><circle cx="20" cy="20" r="10.5" fill="none" stroke="#4d8fd6" stroke-width="4" stroke-dasharray="44 66"></circle></svg></div>
+</div>
+<div style="font:400 11px/1.5 Barlow,sans-serif;color:#8b9095;margin-top:9px">Four fixed columns, tabular numerals, hairline rules instead of cards — 9 rows per screen at 38 tickers. Sector tag and flag marker sit inline so the row never wraps.</div>
+</div>
+<div>
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#94bce3;margin-bottom:12px">NAVIGATION</div>
+<div style="font:400 11.5px/1.7 'IBM Plex Mono',monospace;color:#b9bfc4">
+<div>HOME (scroll)</div>
+<div style="color:#8b9095">├─ movers strip → <span style="color:#94bce3">DETAIL</span></div>
+<div style="color:#8b9095">├─ digest card ──→ <span style="color:#94bce3">DIGEST</span></div>
+<div style="color:#8b9095">└─ table row ────→ <span style="color:#94bce3">DETAIL</span></div>
+<div style="margin-top:8px;color:#8b9095">DIGEST ─ ticker line → <span style="color:#94bce3">DETAIL</span></div>
+<div style="margin-top:8px">back = gesture / chevron</div>
+</div>
+</div>
+<div>
+<div style="font:600 10px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#94bce3;margin-bottom:12px">CHART</div>
+<div style="font:400 11px/1.55 Barlow,sans-serif;color:#8b9095">One 1.6px steel line, no axes, no candles. A dashed SMA50 is the only overlay. Range chips 1D/1W/1M/1Y; hi/lo labelled under the plot instead of a y-axis. RSI and MACD live in the score breakdown as numbers, not as extra panes.</div>
+</div>
+</div>
+<p style="margin:6px 0 0;font:400 12px/1.5 Barlow,sans-serif;color:rgba(29,31,32,.5)">Try next: "add a compact sparkline column to the table" · "show the sector-grouped variant" · "design the v2 push-alert states"</p>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:1080}}">
+const UP='#b5d9fd', DOWN='#b7b7ba', RED='#c2503f', MUTED='#8b9095', ACC='#94bce3';
+const RAW=[
+ ['NVDA','NVIDIA Corp','TECH',184.22,2.41,6,88,1],
+ ['ISRG','Intuitive Surgical','ROBO',562.40,3.12,5,74,1],
+ ['SYM','Symbotic Inc','ROBO',41.86,4.28,5,52,1],
+ ['AMD','Advanced Micro Devices','TECH',167.31,1.08,4,61,1],
+ ['ROK','Rockwell Automation','ROBO',318.75,0.42,3,58,0],
+ ['AVGO','Broadcom Inc','TECH',291.04,-0.61,3,70,0],
+ ['TER','Teradyne Inc','ROBO',148.92,1.86,2,49,0],
+ ['MSFT','Microsoft Corp','TECH',508.16,0.24,2,81,0],
+ ['REGN','Regeneron Pharma','BIO',612.38,-1.24,1,66,0],
+ ['VRTX','Vertex Pharma','BIO',441.07,-0.38,0,72,0],
+ ['CRSP','CRISPR Therapeutics','BIO',48.63,-3.41,-1,24,1],
+ ['MRNA','Moderna Inc','BIO',26.14,-2.07,-2,18,0]];
+const C_T=2*Math.PI*17.5, C_F=2*Math.PI*11.6;
+const dash=(frac,circ)=>`${(Math.max(0,Math.min(1,frac))*circ*0.75).toFixed(1)} ${circ}`;
+const techFrac=s=>(s+3)/10;
+const fmt=p=>p.toFixed(2);
+const chg=c=>(c>=0?'▲':'▼')+Math.abs(c).toFixed(2)+'%';
+
+const SIGNALS=[['Price vs SMA20','+4.1%','+1'],['Price vs SMA50','+9.8%','+1'],['Price vs SMA90','+14.2%','+1'],['Price vs SMA200','+31.6%','+1'],['EMA 12/26 crossover','bullish 6d ago','+1'],['RSI (14)','67.4','+1'],['MACD histogram','+1.82 rising','+1'],['Volume vs 20d avg','1.9×','+1'],['52-week range position','0.91','0']];
+const FUND=[['P/E ratio','38.4','44.1',72,58],['P/B ratio','21.6','12.9',86,52],['Profit margin','55.8%','24.3%',92,40],['Revenue growth YoY','+62.1%','+18.7%',95,30]];
+const EPS=[['Q1','+8.4%',52],['Q2','+11.2%',68],['Q3','-2.1%',18],['Q4','+6.7%',44]];
+const NEWS=[['REUTERS','2h','0.94','Hyperscaler capex guidance lifted again as three of the four largest buyers raise 2027 datacentre budgets'],['BLOOMBERG','5h','0.88','Supply chain checks point to earlier-than-expected ramp of the next accelerator generation'],['WSJ','1d','0.71','Export-licence framework for advanced accelerators clears an interagency review step'],['CNBC','2d','0.63','Sell-side note trims target on valuation, keeps rating unchanged']];
+const DIGESTS=[
+ ['30','AUG',6,'2 SPIKES','Momentum rotated into robotics; biotech stayed weak into the ASCO read-outs.','Three robotics names crossed SMA50 on volume 1.8–2.4× their 20-day average, and SYM cleared its 52-week midpoint for the first time since March. On the other side, two biotech holdings are now oversold on RSI while their fundamentals scores are unchanged — a divergence worth watching rather than acting on.',[['SYM','crossed SMA50, vol 2.4×','4.28%',UP,'T5/F52'],['ISRG','new 52w high','3.12%',UP,'T5/F74'],['CRSP','RSI 28, oversold','3.41%',DOWN,'T-1/F24']]],
+ ['29','AUG',4,'1 SPIKE','Semis consolidated on light volume; one industrial name flagged on an EPS surprise.','Volume across the semi cohort ran below average, and the composite scores barely moved. ROK re-entered the flag list after a +6.7% EPS surprise pushed its forward estimate up, though the price has not yet followed.',[['ROK','EPS surprise +6.7%','0.42%',UP,'T3/F58'],['AVGO','MACD flattening','0.61%',DOWN,'T3/F70']]],
+ ['28','AUG',7,'3 SPIKES','Broad risk-on session; seven tickers crossed the composite threshold.','The rally was breadth-driven rather than led by a single name: seven tickers crossed the threshold, six of them on EMA crossovers rather than fresh news. Fundamentals percentiles were unchanged, which suggests a technical move.',[['NVDA','EMA 12/26 bull cross','2.41%',UP,'T6/F88'],['AMD','vol 1.6×, RSI 61','1.08%',UP,'T4/F61'],['TER','crossed SMA20','1.86%',UP,'T2/F49']]],
+ ['27','AUG',3,'0 SPIKES','Quiet tape. Only biotech showed score movement, all downward.','Three tickers fell below their SMA90 with no accompanying news, so the digest flagged them on technicals alone. Peer-relative fundamentals for the biotech cohort remain in the bottom quartile of the watchlist.',[['MRNA','below SMA90','2.07%',DOWN,'T-2/F18'],['VRTX','MACD negative','0.38%',DOWN,'T0/F72']]]];
+
+function series(sym,range){
+  const n={'1D':32,'1W':44,'1M':60,'1Y':80}[range];
+  let seed=0; for(const ch of sym+range) seed=(seed*31+ch.charCodeAt(0))%9973;
+  const rnd=()=>{seed=(seed*1103515245+12345)%2147483648; return seed/2147483648;};
+  const trend={'1D':0.5,'1W':1.4,'1M':3.2,'1Y':11}[range];
+  const out=[]; let v=100;
+  for(let i=0;i<n;i++){ v+= (rnd()-0.45)*trend*0.9 + trend/n; out.push(v); }
+  return out;
+}
+
+class Component extends DCLogic {
+  state={screen:'home',sym:'NVDA',sort:'tech',dir:-1,filter:'ALL',range:'1M',signalsOpen:true,openDigest:'30'};
+  go=(screen,sym)=>this.setState(s=>({screen,sym:sym||s.sym}));
+  renderVals(){
+    const st=this.state;
+    const mk=(r)=>({sym:r[0],name:r[1],sector:r[2],price:fmt(r[3]),chgText:chg(r[4]),chg:r[4],
+      dirColor:r[4]>=0?UP:DOWN,arrow:r[4]>=0?'▲':'▼',arrowColor:r[4]>=0?UP:RED,chgNum:Math.abs(r[4]).toFixed(2)+'%',tech:(r[5]>0?'+':'')+r[5],fund:r[6],flag:r[7]?'◆':'',
+      techDash:dash(techFrac(r[5]),C_T),fundDash:dash(r[6]/100,C_F),
+      open:()=>this.go('detail',r[0])});
+    let rows=RAW.filter(r=>st.filter==='ALL'?true:st.filter==='FLAGGED'?r[7]:r[2]===st.filter);
+    const key={sym:0,price:3,chg:4,tech:5}[st.sort];
+    rows=[...rows].sort((a,b)=>{const A=a[key],B=b[key];return (A>B?1:A<B?-1:0)*st.dir});
+    const sortSet=k=>()=>this.setState(s=>({sort:k,dir:s.sort===k?-s.dir:(k==='sym'?1:-1)}));
+    const arrow=k=>st.sort===k?(st.dir<0?'↓':'↑'):'';
+    const hc=k=>st.sort===k?ACC:MUTED;
+
+    const raw=RAW.find(r=>r[0]===st.sym)||RAW[0];
+    const t=mk(raw);
+    const ser=series(st.sym,st.range);
+    const lo=Math.min(...ser),hi=Math.max(...ser),span=(hi-lo)||1;
+    const X=i=>(i/(ser.length-1))*344, Y=v=>126-((v-lo)/span)*118;
+    const line=ser.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+    const sma=ser.map((v,i,a)=>{const s=a.slice(Math.max(0,i-8),i+1);return s.reduce((x,y)=>x+y,0)/s.length;});
+    const scale=raw[3]/ser[ser.length-1];
+
+    return {
+      isHome:st.screen==='home',isDetail:st.screen==='detail',isDigest:st.screen==='digest',
+      goHome:()=>this.go('home'),openDigest:()=>this.go('digest'),noop:()=>{},
+      updatedAgo:'4m ago',countText:`${rows.length} OF 38`,
+      movers:[...RAW].sort((a,b)=>Math.abs(b[4])-Math.abs(a[4])).slice(0,4).map(mk),
+      digestChips:['NVDA','SYM','ISRG','CRSP','+2'].map(l=>({label:l,open:()=>l.startsWith('+')?this.go('digest'):this.go('detail',l)})),
+      filters:['ALL','FLAGGED','TECH','BIO','ROBO'].map(f=>({label:f,pick:()=>this.setState({filter:f}),
+        bg:st.filter===f?'rgba(148,188,227,.16)':'transparent',bc:st.filter===f?'#94bce3':'rgba(242,242,243,.14)',fg:st.filter===f?'#dfe9f2':MUTED})),
+      rows:rows.map(mk),
+      sortSym:sortSet('sym'),sortPrice:sortSet('price'),sortChg:sortSet('chg'),sortScore:sortSet('tech'),
+      aSym:arrow('sym'),aPrice:arrow('price'),aChg:arrow('chg'),aScore:arrow('tech'),
+      hSym:hc('sym'),hPrice:hc('price'),hChg:hc('chg'),hScore:hc('tech'),
+      d:{...t,abs:(raw[4]>=0?'+':'−')+fmt(Math.abs(raw[3]*raw[4]/100)),
+        techVerdict:raw[5]>=4?'8 of 9 signals positive; extended vs SMA200':raw[5]>=1?'Mixed — trend intact, momentum cooling':'Below SMA90, MACD negative',
+        fundVerdict:raw[6]>=70?'Top quartile of its peer group on margin and growth':raw[6]>=45?'Mid-pack; premium multiple, average growth':'Bottom quartile on margin and growth',
+        peerNote:`PEER SET: ${raw[2]} COHORT IN WATCHLIST (n=${RAW.filter(r=>r[2]===raw[2]).length})`,
+        fwdEps:'$5.42',epsGrowth:'+28.4% vs FY26',ai1:`${raw[0]} is flagged because eight of nine technical signals turned positive within the last five sessions — the EMA 12/26 crossover on 24 Aug was confirmed by volume at 1.9× the 20-day average, and price now sits at 0.91 of its 52-week range.`,
+        ai2:'What to watch: the position within the 52-week range is the only non-contributing signal, so further upside depends on a breakout rather than mean reversion. Peer-relative fundamentals stay in the top quartile, so the move is not valuation-driven.',
+        aiStamp:'30 AUG 07:40 UTC'},
+      chartLine:line,
+      chartArea:`M0,126 ${line.split(' ').map(p=>'L'+p).join(' ')} L344,126 Z`,
+      smaLine:sma.map((v,i)=>`${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' '),
+      chartLo:'LO '+fmt(lo*scale),chartHi:'HI '+fmt(hi*scale),
+      ranges:['1D','1W','1M','1Y'].map(r=>({label:r,pick:()=>this.setState({range:r}),
+        bg:st.range===r?'rgba(148,188,227,.16)':'transparent',bc:st.range===r?'#94bce3':'rgba(242,242,243,.14)',fg:st.range===r?'#dfe9f2':MUTED})),
+      signalsOpen:st.signalsOpen,signalsLabel:st.signalsOpen?'HIDE 9 TECHNICAL SIGNALS':'SHOW 9 TECHNICAL SIGNALS',
+      signalsCaret:st.signalsOpen?'▲':'▼',
+      toggleSignals:()=>this.setState(s=>({signalsOpen:!s.signalsOpen})),
+      signals:SIGNALS.map(([label,value,pts])=>({label,value,pts,color:pts==='+1'?UP:pts==='0'?MUTED:DOWN})),
+      fundamentals:FUND.map(([label,self,peer,sw,pw])=>({label,self,peer,selfW:sw+'%',peerW:pw+'%',color:'#dfe3e6'})),
+      eps:EPS.map(([q,pct,h])=>({q,pct,h:h+'%',color:pct.startsWith('-')?DOWN:ACC})),
+      news:NEWS.map(([src,time,rel,title])=>({src,time,rel,title})),
+      digests:DIGESTS.map(([day,mon,count,spikes,headline,body,items])=>({day,mon,count,spikes,headline,body,
+        open:st.openDigest===day,caret:st.openDigest===day?'▲':'▼',
+        toggle:()=>this.setState(s=>({openDigest:s.openDigest===day?null:day})),
+        items:items.map(([sym,why,c,dirColor,scores])=>({sym,why,chg:c,dirColor,scores,arrow:dirColor===UP?'▲':'▼',arrowColor:dirColor===UP?UP:RED,open:()=>this.go('detail',sym)}))}))
+    };
+  }
+}
+</script>
+</body>
+</html>
