@@ -58,7 +58,11 @@ fun Sparkline(points: List<PricePoint>, sma: List<Double?> = emptyList(), modifi
             val smaPath = Path()
             var drawing = false
             for (i in sma.indices) {
-                val v = sma[i] ?: run { drawing = false; continue }
+                val v = sma[i]
+                if (v == null) {
+                    drawing = false
+                    continue
+                }
                 if (!drawing) {
                     smaPath.moveTo(x(i), y(v))
                     drawing = true
