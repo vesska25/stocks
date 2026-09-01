@@ -40,6 +40,43 @@ and database, and several real bugs found that way have been fixed:
    Home (now with a back button) — no rebuild needed to point at a
    different server.
 
+## Release build (installable APK, no cable/Android Studio needed to run it)
+
+A debug build (Run in Android Studio) reinstalls fine over itself, but
+Android refuses to install one APK over another unless both are signed with
+the *same* key — so a one-off unsigned/debug-signed APK would force an
+uninstall (losing Settings + Favorites in DataStore) the next time. The fix
+is a release keystore generated **once** and reused for every future build.
+
+**One-time setup:**
+
+1. Android Studio: **Build → Generate Signed App Bundle / APK → APK → Next**,
+   then **Create new...** under Key store path. Fill in the form and save
+   the `.jks` file somewhere *outside* the repo (e.g. your user home
+   folder) — it must never be committed. Remember the store/key passwords.
+2. Copy `android-app/keystore.properties.example` to
+   `android-app/keystore.properties` (gitignored) and fill in the real
+   `storeFile` (absolute path to the `.jks` from step 1), `storePassword`,
+   `keyAlias`, `keyPassword`.
+3. Re-sync Gradle. `app/build.gradle.kts` picks up `keystore.properties`
+   automatically and wires a `release` signing config from it.
+
+**Every time after that** (a new feature lands, you `git pull`):
+
+- Android Studio: **Build → Generate Signed App Bundle / APK → APK → Next**
+  — the keystore from step 1 is now remembered, so this is just Next → Next
+  → Finish. Or from a terminal: `./gradlew assembleRelease`.
+- Output: `app/build/outputs/apk/release/app-release.apk`.
+- Copy that file to the phone (USB, email, Drive, whatever) and open it to
+  install. Same signature as last time → Android treats it as an **update**,
+  not a fresh install, so Settings and Favorites survive. If you ever build
+  a release APK *without* `keystore.properties` present, or from a
+  different keystore, that install will look like a different app to
+  Android — it'll demand an uninstall of the old one first.
+- You'll likely need to allow "install unknown apps" for whichever app you
+  used to open the file (Files, Chrome, Gmail...) the first time — one-time
+  Android prompt, not project-specific.
+
 ## What's implemented
 
 - **Home** — biggest-movers strip, latest-digest preview card, sortable/
