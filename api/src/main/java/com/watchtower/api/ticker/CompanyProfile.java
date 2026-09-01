@@ -20,7 +20,7 @@ public class CompanyProfile {
     @Column(name = "industry")
     private String industry;
 
-    @Column(name = "name")
+    @Column(name = "company_name")
     private String name;
 
     protected CompanyProfile() {

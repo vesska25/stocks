@@ -21,7 +21,7 @@ public interface TickerRepository extends JpaRepository<CompanyProfile, String> 
     @Query(value = """
             SELECT
                 cp.ticker            AS ticker,
-                cp.name              AS name,
+                cp.company_name      AS name,
                 cp.industry          AS industry,
                 rq.price             AS price,
                 rq.change_pct        AS changePct,
