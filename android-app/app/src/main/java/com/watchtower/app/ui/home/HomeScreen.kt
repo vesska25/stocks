@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -207,7 +208,10 @@ private fun FilterChip(label: String, active: Boolean, onClick: () -> Unit) {
         label,
         color = textColor,
         style = MaterialTheme.typography.labelSmall,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = Modifier
+            .widthIn(max = 140.dp)
             .border(1.dp, border)
             .clickable { onClick() }
             .padding(horizontal = 10.dp, vertical = 6.dp),

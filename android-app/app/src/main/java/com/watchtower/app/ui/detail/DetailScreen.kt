@@ -26,8 +26,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -43,6 +45,7 @@ import com.watchtower.app.ui.components.bottomHairline
 import com.watchtower.app.ui.components.formatChangePct
 import com.watchtower.app.ui.components.formatPrice
 import com.watchtower.app.ui.components.formatRelativeTime
+import com.watchtower.app.ui.theme.AccentTint11
 import com.watchtower.app.ui.theme.HairlineFaint
 import com.watchtower.app.ui.theme.HairlineOnDark
 import com.watchtower.app.ui.theme.RingInnerFundamentals
@@ -141,12 +144,14 @@ private fun RangeChips(current: String, onSelect: (String) -> Unit) {
             Text(
                 range,
                 color = if (active) TextPrimary else TextMuted,
+                textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelSmall,
                 modifier = Modifier
                     .weight(1f)
+                    .background(if (active) AccentTint11 else Color.Transparent)
                     .border(1.dp, if (active) RingOuterTechnical else HairlineOnDark)
                     .clickable { onSelect(range) }
-                    .padding(vertical = 6.dp),
+                    .padding(vertical = 8.dp),
             )
         }
     }
