@@ -50,24 +50,50 @@ API_KEY=<real key>
 EOF
 chmod 600 watchtower-api.env
 
+# Bind to localhost only — a reverse proxy (below) handles the public side.
+# Pick any free local port; the production deploy uses 8082.
 docker run -d --name watchtower-api --restart unless-stopped \
   --network <network-name-from-above> \
-  -p 8080:8080 \
+  -p 127.0.0.1:8082:8080 \
   --env-file watchtower-api.env \
   watchtower-api
 ```
 
-Then point the Android app's Settings at `http://<server-public-ip>:8080` —
-works from anywhere (mobile data, any wifi), not just the same LAN as the
-machine running the API.
+### HTTPS via nginx + certbot
 
-**Security note**: this exposes port 8080 to the whole internet, protected
-only by the `X-API-Key` header over plain HTTP — no TLS. Acceptable for a
-personal low-value hobby project (consistent with the single-static-key,
-no-JWT auth scope decided earlier), but the key travels in cleartext on
-untrusted networks (e.g. public wifi). Put a reverse proxy (Caddy/nginx)
-with a free Let's Encrypt cert in front if that risk matters to you —
-not done here since it wasn't asked for.
+This server already fronts other apps with system nginx + certbot (one
+vhost per app in `/etc/nginx/sites-available/`, each proxying to that app's
+`127.0.0.1:<port>`) rather than a container-based reverse proxy — reused
+that existing pattern instead of introducing a second one (e.g. Caddy).
+
+```bash
+sudo tee /etc/nginx/sites-available/stocks > /dev/null <<'EOF'
+server {
+    listen 80;
+    server_name stocks.yourdomain.example;
+
+    location / {
+        proxy_pass http://127.0.0.1:8082;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+sudo ln -s /etc/nginx/sites-available/stocks /etc/nginx/sites-enabled/stocks
+sudo nginx -t && sudo systemctl reload nginx
+
+# Requires a DNS A record for the domain pointing at this server first.
+sudo certbot --nginx -d stocks.yourdomain.example
+```
+
+certbot rewrites the vhost in place to add the `listen 443 ssl` block, the
+cert paths, and an HTTP→HTTPS redirect, and sets up its own auto-renewal —
+nothing else to maintain. Point the Android app's Settings at
+`https://stocks.yourdomain.example` (no port — 443 is HTTPS's default).
+Works from anywhere (mobile data, any wifi), not just the same LAN as the
+server, and the API key no longer travels over the wire in cleartext.
 
 ## Auth
 
