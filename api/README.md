@@ -24,6 +24,51 @@ Then:
 has no default — the app refuses to start without it rather than silently
 running unprotected.
 
+## Deploy with Docker (recommended over running via mvnw on a dev machine)
+
+Running this from a Windows dev machine over an SSH tunnel to Postgres works
+for local testing, but means the API is only reachable while that machine
+and tunnel are up. Better: run it as a container on the same server as
+Postgres/n8n, on the same Docker network, so it talks to Postgres by
+container name — no tunnel needed at all.
+
+```bash
+# On the server, in a clone of this repo:
+cd stocks/api
+
+# Find the docker network n8n-postgres is already on:
+docker inspect n8n-postgres --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}'
+
+docker build -t watchtower-api .
+
+# Keep secrets out of shell history / `docker inspect`:
+cat > watchtower-api.env <<'EOF'
+DB_URL=jdbc:postgresql://n8n-postgres:5432/stock_watchlist
+DB_USERNAME=n8nuser
+DB_PASSWORD=<real password>
+API_KEY=<real key>
+EOF
+chmod 600 watchtower-api.env
+
+docker run -d --name watchtower-api --restart unless-stopped \
+  --network <network-name-from-above> \
+  -p 8080:8080 \
+  --env-file watchtower-api.env \
+  watchtower-api
+```
+
+Then point the Android app's Settings at `http://<server-public-ip>:8080` —
+works from anywhere (mobile data, any wifi), not just the same LAN as the
+machine running the API.
+
+**Security note**: this exposes port 8080 to the whole internet, protected
+only by the `X-API-Key` header over plain HTTP — no TLS. Acceptable for a
+personal low-value hobby project (consistent with the single-static-key,
+no-JWT auth scope decided earlier), but the key travels in cleartext on
+untrusted networks (e.g. public wifi). Put a reverse proxy (Caddy/nginx)
+with a free Let's Encrypt cert in front if that risk matters to you —
+not done here since it wasn't asked for.
+
 ## Auth
 
 Every endpoint requires the `X-API-Key` header to match `API_KEY`. Missing or
