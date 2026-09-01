@@ -142,6 +142,16 @@ including `eps_surprise_last4` and `fundamentals_signals` jsonb). 404 if the
 ticker isn't in `company_profile`. Any of `quote`/`technicals`/`fundamentals`
 can be `null` if that ticker has no row yet in the corresponding table.
 
+`fundamentals_signals` is passed through as-is (`@JsonRawValue`), so any keys
+the n8n pipeline adds to that jsonb column show up here automatically with no
+API change needed. As of the peer-comparison rollout it carries, alongside
+the original four `+1/-1/0` flags (`peVsIndustry`, `pbVsIndustry`,
+`marginVsIndustry`, `growthVsIndustry`): `industry` (the comparison group),
+`peer_tickers` (other watchlist tickers in that industry), and
+`industry_averages` (`pe_ratio`, `pb_ratio`, `profit_margin`,
+`revenue_growth_yoy`). The whole object is `null` when `fundamentals_score`
+is null (ticker is the only one in its industry, nothing to compare against).
+
 ### `GET /api/tickers/{ticker}/news`
 
 News from `ticker_news`, newest first (`news_datetime`, falling back to

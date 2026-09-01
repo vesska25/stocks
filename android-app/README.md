@@ -74,13 +74,13 @@ no overlay is drawn (rather than drawing a misleading short-window average).
 
 ## Known gaps / deliberate simplifications
 
-- **Fundamentals show self-values only** (P/E, P/B, revenue growth YoY,
-  profit margin) — no peer-comparison bars. `fundamentals_signals`/
-  `eps_surprise_last4` are arbitrary JSON from the n8n pipeline with no
-  confirmed shape (unlike `analytics_results.signals`, which was verified
-  against the design brief) — building a bar chart on an unconfirmed
-  contract risks silently rendering garbage. Get a real sample of
-  `fundamentals_signals` JSON from the production DB before building this.
+- **`eps_surprise_last4` is not rendered** — still arbitrary JSON from the
+  n8n pipeline with no confirmed shape; kept as an unparsed `JsonElement` in
+  the model until a real sample turns up. `fundamentals_signals`, by
+  contrast, now has a confirmed shape (see `FundamentalsSignalsParsing.kt`)
+  and backs the Detail screen's PEERS section: peer count/list plus a
+  per-metric own-value-vs-industry-average comparison for P/E, P/B, profit
+  margin, and revenue growth YoY.
 - **No push notifications** — v2 in the original design brief, out of scope.
 - **No unit/instrumented tests.**
 

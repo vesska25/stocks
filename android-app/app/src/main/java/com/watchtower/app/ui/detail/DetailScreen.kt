@@ -119,6 +119,7 @@ fun DetailScreen(ticker: String, onBack: () -> Unit) {
                     }
                     item { ScoresCard(state.detail!!, state.signalsOpen, viewModel::toggleSignals) }
                     item { FundamentalsSection(state.detail!!.fundamentals) }
+                    item { PeersSection(state.detail!!.fundamentals) }
                     item { EarningsSection(state.detail!!.fundamentals) }
                     item { NewsSection(state.news) }
                     item { Spacer(Modifier.height(24.dp)) }
@@ -283,6 +284,71 @@ private fun FundamentalsSection(fundamentals: TickerDetail.Fundamentals?) {
                 Text(value?.let { String.format("%.1f", it) } ?: "—", color = TextPrimary)
             }
         }
+    }
+}
+
+@Composable
+private fun PeersSection(fundamentals: TickerDetail.Fundamentals?) {
+    val comparison = parseFundamentalsSignals(fundamentals?.fundamentalsSignals) ?: return
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .border(1.dp, HairlineOnDark)
+            .padding(14.dp),
+    ) {
+        Text(
+            "PEERS" + (comparison.industry?.let { " · ${it.uppercase()}" } ?: ""),
+            color = TextMuted,
+            style = MaterialTheme.typography.labelSmall,
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "vs ${comparison.peerTickers.size} other watchlist " +
+                (if (comparison.peerTickers.size == 1) "ticker" else "tickers") + " in the same industry",
+            color = TextMuted,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        if (comparison.peerTickers.isNotEmpty()) {
+            Spacer(Modifier.height(4.dp))
+            Text(comparison.peerTickers.joinToString(", "), color = TextBody, style = MaterialTheme.typography.bodySmall)
+        }
+        comparison.averages?.let { averages ->
+            Spacer(Modifier.height(12.dp))
+            PeerMetricRow("P/E ratio", fundamentals?.peRatio, averages.peRatio, comparison.peVsIndustry)
+            PeerMetricRow("P/B ratio", fundamentals?.pbRatio, averages.pbRatio, comparison.pbVsIndustry)
+            PeerMetricRow("Profit margin", fundamentals?.profitMargin, averages.profitMargin, comparison.marginVsIndustry)
+            PeerMetricRow("Revenue growth YoY", fundamentals?.revenueGrowthYoy, averages.revenueGrowthYoy, comparison.growthVsIndustry)
+        }
+    }
+}
+
+@Composable
+private fun PeerMetricRow(label: String, own: Double?, industryAvg: Double?, sign: Int?) {
+    val color = when (sign) {
+        1 -> com.watchtower.app.ui.theme.UpColor
+        -1 -> com.watchtower.app.ui.theme.DownNeutral
+        else -> TextMuted
+    }
+    val glyph = when (sign) {
+        1 -> "▲"
+        -1 -> "▼"
+        else -> "–"
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().bottomHairline(HairlineFaint).padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(label, color = TextBody, modifier = Modifier.weight(1f))
+        Text(own?.let { String.format("%.1f", it) } ?: "—", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "vs ${industryAvg?.let { String.format("%.1f", it) } ?: "—"}",
+            color = TextMuted,
+            style = MaterialTheme.typography.bodySmall,
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(glyph, color = color)
     }
 }
 
