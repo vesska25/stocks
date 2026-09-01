@@ -218,11 +218,11 @@ private fun ScoresCard(detail: TickerDetail, signalsOpen: Boolean, onToggleSigna
                     Text("●", color = RingInnerFundamentals, style = MaterialTheme.typography.bodySmall)
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        fundamentals?.fundamentalsScore?.let { it.toInt().toString() } ?: "—",
+                        fundamentals?.fundamentalsScore?.let { (if (it >= 0) "+" else "") + it.toInt() } ?: "—",
                         color = TextPrimary,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    Text(" pct vs peers", color = TextMuted, style = MaterialTheme.typography.labelSmall)
+                    Text(" / +4 fundamentals", color = TextMuted, style = MaterialTheme.typography.labelSmall)
                 }
             }
         }

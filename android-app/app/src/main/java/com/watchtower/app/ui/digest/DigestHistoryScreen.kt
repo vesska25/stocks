@@ -129,7 +129,8 @@ private fun DigestRow(
                 ) {
                     Text(snap.ticker, color = TextPrimary, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                     Text(
-                        "T${snap.compositeScore?.let { (if (it >= 0) "+" else "") + it } ?: "—"}/F${snap.fundamentalsScore ?: "—"}",
+                        "T${snap.compositeScore?.let { (if (it >= 0) "+" else "") + it } ?: "—"}" +
+                            "/F${snap.fundamentalsScore?.let { (if (it >= 0) "+" else "") + it } ?: "—"}",
                         color = TextMuted,
                         style = MaterialTheme.typography.labelSmall,
                     )

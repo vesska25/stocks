@@ -16,9 +16,11 @@ import com.watchtower.app.ui.theme.RingOuterTechnical
 
 /**
  * Concentric dual ring: outer = technical composite (-3..+7, origin at -3),
- * inner = fundamentals percentile vs same-industry peers (0-100). Same
- * proportions at every size, per the design's "same glyph at 3 sizes" rule
- * (26dp table rows, 34dp mover cards, 92dp detail).
+ * inner = fundamentals score vs same-industry peers (-4..+4 — the sum of
+ * four +1/0/-1 peer-comparison signals: P/E, P/B, margin, growth; confirmed
+ * against production data, not the 0-100 percentile originally assumed from
+ * the design brief). Same proportions at every size, per the design's "same
+ * glyph at 3 sizes" rule (26dp table rows, 34dp mover cards, 92dp detail).
  *
  * A 270° sweep starting at 135° (not a full circle) — the 90° gap at the
  * bottom-left reads as the scale's empty origin, matching the source design.
@@ -31,7 +33,7 @@ fun ScoreRing(
     modifier: Modifier = Modifier,
 ) {
     val techFraction = technicalScore?.let { ((it + 3.0) / 10.0).coerceIn(0.0, 1.0) } ?: 0.0
-    val fundFraction = fundamentalsScore?.let { (it / 100.0).coerceIn(0.0, 1.0) } ?: 0.0
+    val fundFraction = fundamentalsScore?.let { ((it + 4.0) / 8.0).coerceIn(0.0, 1.0) } ?: 0.0
 
     Canvas(modifier = modifier.size(size)) {
         val strokeWidth = this.size.minDimension * 0.17f
