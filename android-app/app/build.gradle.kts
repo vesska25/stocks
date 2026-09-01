@@ -30,6 +30,8 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        // PullToRefreshBox (Home/Detail screens) is still @ExperimentalMaterial3Api.
+        freeCompilerArgs += listOf("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
     }
 
     buildFeatures {
