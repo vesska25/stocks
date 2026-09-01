@@ -94,7 +94,15 @@ fun DetailScreen(ticker: String, onBack: () -> Unit) {
                 item { PriceHeader(state.detail!!) }
                 item {
                     Column(Modifier.padding(horizontal = 16.dp)) {
-                        Sparkline(state.history)
+                        Sparkline(state.visibleHistory, state.sma50)
+                        if (state.sma50.isNotEmpty()) {
+                            Text(
+                                "— — SMA50",
+                                color = TextMuted,
+                                style = MaterialTheme.typography.labelSmall,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
                         RangeChips(state.range, viewModel::setRange)
                     }
                 }

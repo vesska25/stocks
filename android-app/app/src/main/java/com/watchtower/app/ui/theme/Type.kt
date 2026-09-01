@@ -2,17 +2,28 @@ package com.watchtower.app.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.watchtower.app.R
 
-// The design specifies Barlow / Barlow Condensed / IBM Plex Mono. Those
-// aren't bundled here (no network access to fetch font files in this
-// environment) — system sans-serif and monospace stand in. Swap FontFamily
-// values below for the real fonts once added under res/font.
-val BodyFont = FontFamily.SansSerif
-val CondensedFont = FontFamily.SansSerif
-val MonoFont = FontFamily.Monospace
+// The design specifies Barlow / Barlow Condensed / IBM Plex Mono, bundled
+// under res/font (OFL-licensed, from the google/fonts repo).
+val BodyFont = FontFamily(
+    Font(R.font.barlow_regular, FontWeight.Normal),
+    Font(R.font.barlow_medium, FontWeight.Medium),
+    Font(R.font.barlow_semibold, FontWeight.SemiBold),
+)
+val CondensedFont = FontFamily(
+    Font(R.font.barlow_condensed_regular, FontWeight.Normal),
+    Font(R.font.barlow_condensed_medium, FontWeight.Medium),
+    Font(R.font.barlow_condensed_semibold, FontWeight.SemiBold),
+)
+val MonoFont = FontFamily(
+    Font(R.font.ibm_plex_mono_regular, FontWeight.Normal),
+    Font(R.font.ibm_plex_mono_medium, FontWeight.Medium),
+)
 
 val Typography = Typography(
     bodyLarge = TextStyle(fontFamily = BodyFont, fontWeight = FontWeight.Normal, fontSize = 14.sp),

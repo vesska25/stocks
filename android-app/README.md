@@ -4,79 +4,85 @@ Native Kotlin + Jetpack Compose client for the Watchtower stock-research API
 (`/api` in the repo root), implementing the "Watchtower" design from the
 Claude Design handoff bundle (`project/Stock Research App.dc.html`).
 
-## Important: not build-verified
+## Status: build-verified, running against real data
 
-This was written in a sandboxed environment with no access to the Android
-SDK, Google's Maven repo, or the Gradle distribution servers — so unlike
-`/api`, **this has not been compiled or run**. It's been carefully
-hand-reviewed for API correctness (Compose, Retrofit, DataStore, Navigation),
-and a couple of real bugs were caught and fixed that way (a wrong import,
-a navigation `popUpTo` misuse), but there's no substitute for an actual
-build. Open it in Android Studio, sync Gradle, and report back the first
-error — dependency versions or Compose/API usage are the most likely spots
-for something to have slipped through.
+Originally written in a sandboxed environment with no Android SDK, so the
+first version was hand-reviewed only, not compiled. It has since been built
+and run for real (Android Studio, emulator) against the live production API
+and database, and several real bugs found that way have been fixed:
 
-The Gradle wrapper (`gradlew`, `gradle/wrapper/gradle-wrapper.jar`) was
-generated with a real local Gradle install, so it's a genuine wrapper, not a
-stub — `./gradlew` will download Gradle 8.9 and Android Gradle Plugin 8.5.2
-into your Gradle cache the first time you run it (needs your machine to have
-normal internet/Maven access, which this sandbox didn't).
+- A wrong Compose import and a navigation `popUpTo` misuse (caught in
+  hand-review, before the first real build).
+- `enableEdgeToEdge()` with no inset padding, which put top-left touch
+  targets (the detail screen's back button) under the status bar — taps
+  landed on the wrong pixels while the OS back gesture kept working,
+  which was the actual symptom reported. Fixed with `safeDrawingPadding()`
+  once at the NavHost root.
+- Settings had no way back except Save — fine for the forced first-run
+  flow, wrong when opened via Home's gear icon just to check/edit existing
+  values. Back button now shows only when there's an actual previous
+  screen.
+- Long industry names (e.g. "Life Sciences Tools & Services") wrapped to
+  two lines and broke the filter-chip row height — now truncated with
+  ellipsis.
 
 ## Run
 
-1. Open `android-app/` in Android Studio (or `File > Open` on this
-   directory), let it sync Gradle.
+1. Open `android-app/` in Android Studio, let it sync Gradle.
 2. Run on an emulator or device.
 3. First launch goes to a **Settings screen** (base URL + API key aren't
-   hardcoded — see below) — enter your `watchtower-api` instance's URL and
-   the `API_KEY` you set on the server, then Save.
+   hardcoded) — enter your `watchtower-api` instance's URL and the
+   `API_KEY` you set on the server, then Save.
    - Emulator talking to a server on your host machine: use `10.0.2.2`
-     instead of `127.0.0.1`/`localhost` (Android's standard host-loopback
-     alias), e.g. `http://10.0.2.2:8080`.
-   - Physical device: needs an address actually reachable from the phone —
-     your machine's LAN IP, or wherever the API is actually running.
+     instead of `127.0.0.1`/`localhost`, e.g. `http://10.0.2.2:8080`.
+   - Physical device: needs an address actually reachable from the phone.
 4. Settings are stored in DataStore, editable any time via the gear icon on
-   Home — no rebuild needed to point at a different server.
+   Home (now with a back button) — no rebuild needed to point at a
+   different server.
 
 ## What's implemented
 
 - **Home** — biggest-movers strip, latest-digest preview card, sortable/
   filterable watchlist table. Sector filter chips are derived from whatever
   `industry` values come back from `/api/tickers` (not hardcoded).
-- **Ticker detail** — price/change header, sparkline chart with 1D/1W/1M/1Y
-  range chips, dual score ring with expandable technical-signal breakdown,
-  fundamentals (self-values), forward EPS, news.
+- **Ticker detail** — price/change header, sparkline chart with a real
+  dashed 50-day SMA overlay (see below), 1D/1W/1M/1Y range chips, dual
+  score ring with expandable technical-signal breakdown, fundamentals
+  (self-values), forward EPS, news.
 - **Digest history** — paginated (loads more as you scroll), expandable per
   digest to show `tickerSnapshots` (score/price at digest time).
-- **Settings** — base URL + API key, DataStore-backed.
+- **Settings** — base URL + API key, DataStore-backed, with a back button
+  when reached from Home (not on the forced first-run screen).
 
 Dual score ring, sparkline, and hairline row separators are custom `Canvas`
 composables reproducing the design's visual language (no chart library).
+Fonts are the real Barlow / Barlow Condensed / IBM Plex Mono (OFL-licensed,
+bundled under `res/font`), not system stand-ins.
+
+### The SMA50 overlay is real, not decorative
+
+`/api/tickers/{ticker}/history` only returns raw closes, and
+`analytics_results.sma50` is a single latest value, not a series — so
+there's no shortcut from the API. Instead, the detail screen always fetches
+a full year of closes once (`DetailViewModel.loadAll`, `range=1Y`,
+regardless of which range chip is selected) and computes a genuine 50-day
+simple moving average client-side (`DetailUiState.sma50`), then slices both
+the raw line and the SMA line to whatever range chip is active — switching
+ranges is instant (no re-fetch) since it's just re-slicing already-fetched
+data. If a ticker has under 50 days of history, `sma50` comes back empty and
+no overlay is drawn (rather than drawing a misleading short-window average).
 
 ## Known gaps / deliberate simplifications
 
-- **No dashed SMA50 overlay on the chart.** `/api/tickers/{ticker}/history`
-  returns raw closes only; `analytics_results.sma50` is a single latest
-  value, not a series aligned to the chart's date range, so overlaying it
-  would be fabricated. Omitted rather than faked.
 - **Fundamentals show self-values only** (P/E, P/B, revenue growth YoY,
   profit margin) — no peer-comparison bars. `fundamentals_signals`/
   `eps_surprise_last4` are arbitrary JSON from the n8n pipeline with no
-  confirmed shape, so building a bar chart on them would be guessing at a
-  contract that was never verified end-to-end.
-- **Technical signal breakdown** (`analytics_results.signals`) IS parsed
-  and rendered (`ui/detail/SignalsParsing.kt`), on the assumption it's a
-  JSON array of `{label, value, pts}` objects, matching the original design
-  brief. If the real column is shaped differently, that section will just
-  render empty rather than crash — worth checking against real data.
+  confirmed shape (unlike `analytics_results.signals`, which was verified
+  against the design brief) — building a bar chart on an unconfirmed
+  contract risks silently rendering garbage. Get a real sample of
+  `fundamentals_signals` JSON from the production DB before building this.
 - **No push notifications** — v2 in the original design brief, out of scope.
-- **Fonts**: the design specifies Barlow / Barlow Condensed / IBM Plex Mono;
-  this build uses system sans-serif/monospace as stand-ins (no network
-  access to fetch font files here). Swap `ui/theme/Type.kt`'s `FontFamily`
-  values for the real fonts under `res/font` whenever convenient.
-- **No unit/instrumented tests** — the standard boilerplate test files exist
-  in Gradle's expected locations but nothing meaningful was added to them,
-  given the build itself couldn't be verified here.
+- **No unit/instrumented tests.**
 
 ## Architecture
 

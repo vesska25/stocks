@@ -7,27 +7,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.dp
 import com.watchtower.app.data.model.PricePoint
 import com.watchtower.app.ui.theme.HairlineFaint
 import com.watchtower.app.ui.theme.RingOuterTechnical
+import com.watchtower.app.ui.theme.TextPrimary
 
 /**
  * One steel line + filled area beneath, no axes/candles — matches the
- * design's chart style. The design also overlays a dashed SMA50 line, but
- * the API only returns the latest SMA50 (a single value from
- * analytics_results), not a historical series aligned to arbitrary date
- * ranges, so that overlay is omitted here rather than faked.
+ * design's chart style. `sma` (same length as `points` when non-empty) is a
+ * real 50-day close SMA computed client-side from historical_prices — see
+ * DetailUiState.sma50 — drawn as a dashed overlay, matching the design.
  */
 @Composable
-fun Sparkline(points: List<PricePoint>, modifier: Modifier = Modifier) {
+fun Sparkline(points: List<PricePoint>, sma: List<Double?> = emptyList(), modifier: Modifier = Modifier) {
     val closes = points.mapNotNull { it.close }
     Canvas(modifier = modifier.fillMaxWidth().height(132.dp)) {
         if (closes.size < 2) return@Canvas
-        val lo = closes.min()
-        val hi = closes.max()
+        val smaValues = sma.filterNotNull()
+        val lo = (closes + smaValues).min()
+        val hi = (closes + smaValues).max()
         val span = (hi - lo).takeIf { it > 0.0 } ?: 1.0
 
         fun x(i: Int) = (i.toFloat() / (closes.size - 1)) * size.width
@@ -51,5 +53,24 @@ fun Sparkline(points: List<PricePoint>, modifier: Modifier = Modifier) {
 
         drawPath(areaPath, color = RingOuterTechnical.copy(alpha = 0.12f), style = Fill)
         drawPath(linePath, color = RingOuterTechnical, style = Stroke(width = 4f))
+
+        if (sma.size == closes.size) {
+            val smaPath = Path()
+            var drawing = false
+            for (i in sma.indices) {
+                val v = sma[i] ?: run { drawing = false; continue }
+                if (!drawing) {
+                    smaPath.moveTo(x(i), y(v))
+                    drawing = true
+                } else {
+                    smaPath.lineTo(x(i), y(v))
+                }
+            }
+            drawPath(
+                smaPath,
+                color = TextPrimary.copy(alpha = 0.45f),
+                style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f))),
+            )
+        }
     }
 }
