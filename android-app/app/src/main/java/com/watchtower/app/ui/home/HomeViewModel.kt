@@ -56,16 +56,20 @@ class HomeViewModel(private val repository: WatchtowerRepository) : ViewModel() 
 
     fun refresh() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            val previous = _uiState.value
+            _uiState.value = previous.copy(isLoading = true, error = null)
 
             val tickersResult = repository.getTickers()
             val digestResult = repository.getDigests(page = 0, size = 1)
 
+            // A failed pull-to-refresh keeps showing the last good data
+            // (with an error message) rather than blanking the screen —
+            // previous.tickers/latestDigest, not emptyList()/null.
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 error = tickersResult.exceptionOrNull()?.message,
-                tickers = tickersResult.getOrDefault(emptyList()),
-                latestDigest = digestResult.getOrNull()?.content?.firstOrNull(),
+                tickers = tickersResult.getOrDefault(previous.tickers),
+                latestDigest = digestResult.getOrNull()?.content?.firstOrNull() ?: previous.latestDigest,
             )
         }
     }

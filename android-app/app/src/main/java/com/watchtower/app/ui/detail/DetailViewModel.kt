@@ -64,17 +64,20 @@ class DetailViewModel(private val repository: WatchtowerRepository, private val 
 
     fun loadAll() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            val previous = _uiState.value
+            _uiState.value = previous.copy(isLoading = true, error = null)
             val detailResult = repository.getTickerDetail(ticker)
             val historyResult = repository.getTickerHistory(ticker, "1Y")
             val newsResult = repository.getTickerNews(ticker)
 
+            // A failed pull-to-refresh keeps showing the last good data
+            // (with an error message) rather than blanking the screen.
             _uiState.value = _uiState.value.copy(
                 isLoading = false,
                 error = detailResult.exceptionOrNull()?.message,
-                detail = detailResult.getOrNull(),
-                fullHistory = historyResult.getOrDefault(emptyList()).filter { it.close != null },
-                news = newsResult.getOrDefault(emptyList()),
+                detail = detailResult.getOrNull() ?: previous.detail,
+                fullHistory = historyResult.getOrNull()?.filter { it.close != null } ?: previous.fullHistory,
+                news = newsResult.getOrDefault(previous.news),
             )
         }
     }

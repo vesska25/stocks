@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -91,28 +92,40 @@ fun HomeScreen(
         }
 
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            // True first load — nothing to show yet.
+            state.isLoading && state.tickers.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = RingOuterTechnical)
             }
-            state.error != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            // First load failed — nothing to pull-to-refresh over yet either.
+            state.error != null && state.tickers.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Couldn't load tickers: ${state.error}", color = TextMuted)
                     Spacer(Modifier.height(8.dp))
                     Text("Tap to retry", color = RingOuterTechnical, modifier = Modifier.clickable { viewModel.refresh() })
                 }
             }
-            else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
-                item { MoversStrip(state.movers, onOpenTicker) }
-                item {
-                    state.latestDigest?.let { digest ->
-                        DigestPreviewCard(digestText = digest.digestText, createdAt = digest.createdAt, onOpenDigests = onOpenDigests)
+            // Prices update every ~20 minutes upstream, so swipe-to-refresh
+            // is the main way to pull the latest instead of restarting the
+            // app. A refresh failure here keeps the last good list visible
+            // (see HomeViewModel.refresh) rather than blanking the screen.
+            else -> PullToRefreshBox(
+                isRefreshing = state.isLoading,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item { MoversStrip(state.movers, onOpenTicker) }
+                    item {
+                        state.latestDigest?.let { digest ->
+                            DigestPreviewCard(digestText = digest.digestText, createdAt = digest.createdAt, onOpenDigests = onOpenDigests)
+                        }
                     }
-                }
-                item { SectionHeader("WATCHLIST", state.rows.size, state.tickers.size) }
-                item { IndustryFilterRow(state.industries, state.filterIndustry, viewModel::setFilter) }
-                item { WatchlistHeaderRow(state.sortKey, state.sortAscending, viewModel::setSort) }
-                items(state.rows, key = { it.ticker }) { row ->
-                    WatchlistRow(row, onClick = { onOpenTicker(row.ticker) })
+                    item { SectionHeader("WATCHLIST", state.rows.size, state.tickers.size) }
+                    item { IndustryFilterRow(state.industries, state.filterIndustry, viewModel::setFilter) }
+                    item { WatchlistHeaderRow(state.sortKey, state.sortAscending, viewModel::setSort) }
+                    items(state.rows, key = { it.ticker }) { row ->
+                        WatchlistRow(row, onClick = { onOpenTicker(row.ticker) })
+                    }
                 }
             }
         }

@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -83,37 +84,45 @@ fun DetailScreen(ticker: String, onBack: () -> Unit) {
         }
 
         when {
-            state.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            state.isLoading && state.detail == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = RingOuterTechnical)
             }
-            state.error != null || state.detail == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            state.error != null && state.detail == null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text("Couldn't load $ticker: ${state.error}", color = TextMuted)
                     Spacer(Modifier.height(8.dp))
                     Text("Tap to retry", color = RingOuterTechnical, modifier = Modifier.clickable { viewModel.loadAll() })
                 }
             }
-            else -> LazyColumn(modifier = Modifier.fillMaxSize()) {
-                item { PriceHeader(state.detail!!) }
-                item {
-                    Column(Modifier.padding(horizontal = 16.dp)) {
-                        Sparkline(state.visibleHistory, state.sma50)
-                        if (state.sma50.isNotEmpty()) {
-                            Text(
-                                "— — SMA50",
-                                color = TextMuted,
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(top = 4.dp),
-                            )
+            // Swipe down to pull fresh price/chart/news — a refresh failure
+            // keeps showing the last good data (see DetailViewModel.loadAll).
+            else -> PullToRefreshBox(
+                isRefreshing = state.isLoading,
+                onRefresh = viewModel::loadAll,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item { PriceHeader(state.detail!!) }
+                    item {
+                        Column(Modifier.padding(horizontal = 16.dp)) {
+                            Sparkline(state.visibleHistory, state.sma50)
+                            if (state.sma50.isNotEmpty()) {
+                                Text(
+                                    "— — SMA50",
+                                    color = TextMuted,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    modifier = Modifier.padding(top = 4.dp),
+                                )
+                            }
+                            RangeChips(state.range, viewModel::setRange)
                         }
-                        RangeChips(state.range, viewModel::setRange)
                     }
+                    item { ScoresCard(state.detail!!, state.signalsOpen, viewModel::toggleSignals) }
+                    item { FundamentalsSection(state.detail!!.fundamentals) }
+                    item { EarningsSection(state.detail!!.fundamentals) }
+                    item { NewsSection(state.news) }
+                    item { Spacer(Modifier.height(24.dp)) }
                 }
-                item { ScoresCard(state.detail!!, state.signalsOpen, viewModel::toggleSignals) }
-                item { FundamentalsSection(state.detail!!.fundamentals) }
-                item { EarningsSection(state.detail!!.fundamentals) }
-                item { NewsSection(state.news) }
-                item { Spacer(Modifier.height(24.dp)) }
             }
         }
     }
