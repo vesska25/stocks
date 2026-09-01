@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +21,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
@@ -75,7 +78,7 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
 ) {
     val app = LocalContext.current.applicationContext as WatchtowerApplication
-    val factory = viewModelFactory { initializer { HomeViewModel(app.repository) } }
+    val factory = viewModelFactory { initializer { HomeViewModel(app.repository, app.favoritesRepository) } }
     val viewModel: HomeViewModel = viewModel(factory = factory)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -136,6 +139,11 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    item {
+                        if (state.favorites.isNotEmpty()) {
+                            MoversStrip(state.favorites, onOpenTicker, title = "FAVORITES")
+                        }
+                    }
                     item { MoversStrip(state.movers, onOpenTicker) }
                     item {
                         state.latestDigest?.let { digest ->
@@ -146,7 +154,12 @@ fun HomeScreen(
                     item { IndustryFilterRow(state.industries, state.filterIndustry, viewModel::setFilter) }
                     item { WatchlistHeaderRow(state.sortKey, state.sortAscending, viewModel::setSort) }
                     items(state.rows, key = { it.ticker }) { row ->
-                        WatchlistRow(row, onClick = { onOpenTicker(row.ticker) })
+                        WatchlistRow(
+                            row,
+                            isFavorite = row.ticker in state.favoriteTickers,
+                            onToggleFavorite = { viewModel.toggleFavorite(row.ticker) },
+                            onClick = { onOpenTicker(row.ticker) },
+                        )
                     }
                 }
             }
@@ -197,10 +210,10 @@ private fun SearchHeader(query: String, onQueryChange: (String) -> Unit, onClose
 }
 
 @Composable
-private fun MoversStrip(movers: List<TickerSummary>, onOpenTicker: (String) -> Unit) {
+private fun MoversStrip(movers: List<TickerSummary>, onOpenTicker: (String) -> Unit, title: String = "BIGGEST MOVERS") {
     Column {
         Text(
-            "BIGGEST MOVERS",
+            title,
             style = MaterialTheme.typography.labelSmall,
             color = TextMuted,
             modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 8.dp),
@@ -335,7 +348,7 @@ private fun WatchlistHeaderRow(sortKey: SortKey, ascending: Boolean, onSort: (So
 }
 
 @Composable
-private fun WatchlistRow(row: TickerSummary, onClick: () -> Unit) {
+private fun WatchlistRow(row: TickerSummary, isFavorite: Boolean, onToggleFavorite: () -> Unit, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -344,6 +357,15 @@ private fun WatchlistRow(row: TickerSummary, onClick: () -> Unit) {
             .padding(horizontal = 16.dp, vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Icon(
+            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+            tint = if (isFavorite) RingOuterTechnical else TextMuted,
+            modifier = Modifier
+                .size(18.dp)
+                .clickable(onClick = onToggleFavorite),
+        )
+        Spacer(Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(row.ticker, color = TextPrimary, fontWeight = FontWeight.SemiBold)

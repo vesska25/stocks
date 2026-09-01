@@ -2,6 +2,7 @@ package com.watchtower.app
 
 import android.app.Application
 import com.watchtower.app.data.WatchtowerRepository
+import com.watchtower.app.data.favorites.FavoritesRepository
 import com.watchtower.app.data.network.NetworkModule
 import com.watchtower.app.data.settings.SettingsRepository
 
@@ -15,11 +16,14 @@ class WatchtowerApplication : Application() {
         private set
     lateinit var repository: WatchtowerRepository
         private set
+    lateinit var favoritesRepository: FavoritesRepository
+        private set
 
     override fun onCreate() {
         super.onCreate()
         settingsRepository = SettingsRepository(this)
         val api = NetworkModule.create(settingsRepository)
         repository = WatchtowerRepository(api)
+        favoritesRepository = FavoritesRepository(this)
     }
 }

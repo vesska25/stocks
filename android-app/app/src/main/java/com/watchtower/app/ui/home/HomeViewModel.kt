@@ -3,6 +3,7 @@ package com.watchtower.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.watchtower.app.data.WatchtowerRepository
+import com.watchtower.app.data.favorites.FavoritesRepository
 import com.watchtower.app.data.model.DigestSummary
 import com.watchtower.app.data.model.TickerSummary
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +23,7 @@ data class HomeUiState(
     val filterIndustry: String? = null,
     val searchActive: Boolean = false,
     val searchQuery: String = "",
+    val favoriteTickers: Set<String> = emptySet(),
 ) {
     val industries: List<String>
         // A couple of rows in the source DB have the literal string "null"
@@ -33,6 +35,9 @@ data class HomeUiState(
 
     val movers: List<TickerSummary>
         get() = tickers.sortedByDescending { row -> row.changePct?.let { kotlin.math.abs(it) } ?: 0.0 }.take(4)
+
+    val favorites: List<TickerSummary>
+        get() = tickers.filter { it.ticker in favoriteTickers }
 
     val rows: List<TickerSummary>
         get() {
@@ -56,13 +61,21 @@ data class HomeUiState(
         }
 }
 
-class HomeViewModel(private val repository: WatchtowerRepository) : ViewModel() {
+class HomeViewModel(
+    private val repository: WatchtowerRepository,
+    private val favoritesRepository: FavoritesRepository,
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
         refresh()
+        viewModelScope.launch {
+            favoritesRepository.favoritesFlow.collect { favorites ->
+                _uiState.value = _uiState.value.copy(favoriteTickers = favorites)
+            }
+        }
     }
 
     fun refresh() {
@@ -108,5 +121,11 @@ class HomeViewModel(private val repository: WatchtowerRepository) : ViewModel() 
 
     fun setSearchQuery(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
+    }
+
+    fun toggleFavorite(ticker: String) {
+        viewModelScope.launch {
+            favoritesRepository.toggle(ticker)
+        }
     }
 }
