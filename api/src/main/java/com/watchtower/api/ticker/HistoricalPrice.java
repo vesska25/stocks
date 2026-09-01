@@ -2,21 +2,25 @@ package com.watchtower.api.ticker;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Objects;
 
 /** Maps to the existing {@code historical_prices} table. Read-only. */
 @Entity
 @Table(name = "historical_prices")
 public class HistoricalPrice {
 
-    @EmbeddedId
-    private Id id;
+    @Id
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "ticker")
+    private String ticker;
+
+    @Column(name = "price_date")
+    private LocalDate priceDate;
 
     @Column(name = "open")
     private BigDecimal open;
@@ -38,11 +42,11 @@ public class HistoricalPrice {
     }
 
     public String getTicker() {
-        return id.ticker;
+        return ticker;
     }
 
     public LocalDate getPriceDate() {
-        return id.priceDate;
+        return priceDate;
     }
 
     public BigDecimal getOpen() {
@@ -63,31 +67,5 @@ public class HistoricalPrice {
 
     public Long getVolume() {
         return volume;
-    }
-
-    @Embeddable
-    public static class Id implements Serializable {
-
-        @Column(name = "ticker")
-        private String ticker;
-
-        @Column(name = "price_date")
-        private LocalDate priceDate;
-
-        protected Id() {
-            // JPA
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Id id)) return false;
-            return Objects.equals(ticker, id.ticker) && Objects.equals(priceDate, id.priceDate);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(ticker, priceDate);
-        }
     }
 }

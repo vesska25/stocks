@@ -125,6 +125,18 @@ an error.
 ## Verification
 
 Endpoints have been mechanically verified against a local, throwaway Postgres
-instance seeded with this exact schema (not against the real production
-database — this sandbox has no network path to it). Verify against real data
-by running the jar with real `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`.
+instance, and separately confirmed working against the real production
+database (running the API against the real `stock_watchlist` DB surfaced
+one real schema mismatch, since fixed: `company_profile.name` doesn't
+exist — the real column is `company_name`).
+
+Every table in the real schema uses a surrogate `id SERIAL PRIMARY KEY`
+(not composite keys on ticker+date), which the entities now match exactly —
+an earlier version used composite embedded ids for `realtime_quotes`,
+`historical_prices`, `analytics_results`, and `company_fundamentals` based
+on an initial schema description that omitted the `id` column; that was a
+real bug for `realtime_quotes` specifically, since `(ticker,
+quote_timestamp)` has no uniqueness constraint there and `quote_timestamp`
+is nullable, so it could have collided in Hibernate's identity map. Also
+fixed: `analytics_results.computed_at` is `timestamp without time zone`
+(`LocalDateTime`), not `timestamptz` (`OffsetDateTime`).

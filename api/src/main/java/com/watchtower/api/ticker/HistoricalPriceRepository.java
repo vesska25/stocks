@@ -4,8 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface HistoricalPriceRepository extends JpaRepository<HistoricalPrice, HistoricalPrice.Id> {
+public interface HistoricalPriceRepository extends JpaRepository<HistoricalPrice, Long> {
 
-    List<HistoricalPrice> findByIdTickerAndIdPriceDateGreaterThanEqualOrderByIdPriceDateAsc(
-            String ticker, LocalDate from);
+    List<HistoricalPrice> findByTickerAndPriceDateGreaterThanEqualOrderByPriceDateAsc(String ticker, LocalDate from);
 }

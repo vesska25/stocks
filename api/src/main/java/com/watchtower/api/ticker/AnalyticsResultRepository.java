@@ -3,7 +3,7 @@ package com.watchtower.api.ticker;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AnalyticsResultRepository extends JpaRepository<AnalyticsResult, AnalyticsResult.Id> {
+public interface AnalyticsResultRepository extends JpaRepository<AnalyticsResult, Long> {
 
-    Optional<AnalyticsResult> findFirstByIdTickerOrderByIdPriceDateDescComputedAtDesc(String ticker);
+    Optional<AnalyticsResult> findFirstByTickerOrderByPriceDateDescComputedAtDesc(String ticker);
 }

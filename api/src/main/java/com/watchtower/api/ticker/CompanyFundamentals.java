@@ -2,14 +2,10 @@ package com.watchtower.api.ticker;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.Objects;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -18,8 +14,15 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "company_fundamentals")
 public class CompanyFundamentals {
 
-    @EmbeddedId
-    private Id id;
+    @Id
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "ticker")
+    private String ticker;
+
+    @Column(name = "report_date")
+    private LocalDate reportDate;
 
     @Column(name = "pe_ratio")
     private BigDecimal peRatio;
@@ -42,32 +45,23 @@ public class CompanyFundamentals {
     private BigDecimal forwardEpsEstimate;
 
     @Column(name = "fundamentals_score")
-    private BigDecimal fundamentalsScore;
+    private Integer fundamentalsScore;
 
     /** Raw JSON text — passed through to the API response as-is. */
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "fundamentals_signals", columnDefinition = "jsonb")
     private String fundamentalsSignals;
 
-    @Column(name = "forward_eps_fetched_at")
-    private OffsetDateTime forwardEpsFetchedAt;
-
-    @Column(name = "eps_surprise_fetched_at")
-    private OffsetDateTime epsSurpriseFetchedAt;
-
-    @Column(name = "fetched_at")
-    private OffsetDateTime fetchedAt;
-
     protected CompanyFundamentals() {
         // JPA
     }
 
     public String getTicker() {
-        return id.ticker;
+        return ticker;
     }
 
     public LocalDate getReportDate() {
-        return id.reportDate;
+        return reportDate;
     }
 
     public BigDecimal getPeRatio() {
@@ -94,41 +88,11 @@ public class CompanyFundamentals {
         return forwardEpsEstimate;
     }
 
-    public BigDecimal getFundamentalsScore() {
+    public Integer getFundamentalsScore() {
         return fundamentalsScore;
     }
 
     public String getFundamentalsSignals() {
         return fundamentalsSignals;
-    }
-
-    public OffsetDateTime getFetchedAt() {
-        return fetchedAt;
-    }
-
-    @Embeddable
-    public static class Id implements Serializable {
-
-        @Column(name = "ticker")
-        private String ticker;
-
-        @Column(name = "report_date")
-        private LocalDate reportDate;
-
-        protected Id() {
-            // JPA
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Id id)) return false;
-            return Objects.equals(ticker, id.ticker) && Objects.equals(reportDate, id.reportDate);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(ticker, reportDate);
-        }
     }
 }

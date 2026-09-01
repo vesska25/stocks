@@ -2,14 +2,11 @@ package com.watchtower.api.ticker;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Embeddable;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.Objects;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -18,8 +15,15 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "analytics_results")
 public class AnalyticsResult {
 
-    @EmbeddedId
-    private Id id;
+    @Id
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "ticker")
+    private String ticker;
+
+    @Column(name = "price_date")
+    private LocalDate priceDate;
 
     @Column(name = "close")
     private BigDecimal close;
@@ -74,19 +78,20 @@ public class AnalyticsResult {
     @Column(name = "signals", columnDefinition = "jsonb")
     private String signals;
 
+    /** Real column is `timestamp without time zone` — LocalDateTime, not OffsetDateTime. */
     @Column(name = "computed_at")
-    private OffsetDateTime computedAt;
+    private LocalDateTime computedAt;
 
     protected AnalyticsResult() {
         // JPA
     }
 
     public String getTicker() {
-        return id.ticker;
+        return ticker;
     }
 
     public LocalDate getPriceDate() {
-        return id.priceDate;
+        return priceDate;
     }
 
     public BigDecimal getClose() {
@@ -157,33 +162,7 @@ public class AnalyticsResult {
         return signals;
     }
 
-    public OffsetDateTime getComputedAt() {
+    public LocalDateTime getComputedAt() {
         return computedAt;
-    }
-
-    @Embeddable
-    public static class Id implements Serializable {
-
-        @Column(name = "ticker")
-        private String ticker;
-
-        @Column(name = "price_date")
-        private LocalDate priceDate;
-
-        protected Id() {
-            // JPA
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Id id)) return false;
-            return Objects.equals(ticker, id.ticker) && Objects.equals(priceDate, id.priceDate);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(ticker, priceDate);
-        }
     }
 }

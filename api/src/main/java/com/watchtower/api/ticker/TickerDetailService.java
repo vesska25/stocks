@@ -36,17 +36,17 @@ public class TickerDetailService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Unknown ticker: " + ticker));
 
         TickerDetailResponse.Quote quote = realtimeQuoteRepository
-                .findFirstByIdTickerOrderByIdQuoteTimestampDesc(ticker)
+                .findFirstByTickerOrderByQuoteTimestampDesc(ticker)
                 .map(TickerDetailResponse.Quote::from)
                 .orElse(null);
 
         TickerDetailResponse.Technicals technicals = analyticsResultRepository
-                .findFirstByIdTickerOrderByIdPriceDateDescComputedAtDesc(ticker)
+                .findFirstByTickerOrderByPriceDateDescComputedAtDesc(ticker)
                 .map(TickerDetailResponse.Technicals::from)
                 .orElse(null);
 
         TickerDetailResponse.Fundamentals fundamentals = companyFundamentalsRepository
-                .findFirstByIdTickerOrderByIdReportDateDesc(ticker)
+                .findFirstByTickerOrderByReportDateDesc(ticker)
                 .map(TickerDetailResponse.Fundamentals::from)
                 .orElse(null);
 
@@ -66,7 +66,7 @@ public class TickerDetailService {
         }
         LocalDate from = LocalDate.now().minusDays(range.lookbackDays());
         return historicalPriceRepository
-                .findByIdTickerAndIdPriceDateGreaterThanEqualOrderByIdPriceDateAsc(ticker, from)
+                .findByTickerAndPriceDateGreaterThanEqualOrderByPriceDateAsc(ticker, from)
                 .stream()
                 .map(PricePointResponse::from)
                 .toList();

@@ -3,7 +3,7 @@ package com.watchtower.api.ticker;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface RealtimeQuoteRepository extends JpaRepository<RealtimeQuote, RealtimeQuote.Id> {
+public interface RealtimeQuoteRepository extends JpaRepository<RealtimeQuote, Long> {
 
-    Optional<RealtimeQuote> findFirstByIdTickerOrderByIdQuoteTimestampDesc(String ticker);
+    Optional<RealtimeQuote> findFirstByTickerOrderByQuoteTimestampDesc(String ticker);
 }

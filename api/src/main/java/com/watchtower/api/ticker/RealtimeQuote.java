@@ -1,31 +1,30 @@
 package com.watchtower.api.ticker;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 /**
  * Maps to the existing {@code realtime_quotes} table. Read-only.
  *
  * <p>This is an append-only time series (a new row roughly every 20 minutes
- * per ticker), not one row per ticker — so the composite (ticker,
- * quote_timestamp) is the identity, not ticker alone. Using ticker alone as
- * the JPA id would let Hibernate's session-level identity map collapse
- * distinct rows for the same ticker into one, silently returning a stale or
- * wrong quote.
+ * per ticker) identified by a surrogate {@code id}, not by (ticker,
+ * quote_timestamp) — that pair has no uniqueness constraint in the real
+ * schema and quote_timestamp is nullable, so it can't safely be the JPA id.
  */
 @Entity
 @Table(name = "realtime_quotes")
 public class RealtimeQuote {
 
-    @EmbeddedId
-    private Id id;
+    @Id
+    @Column(name = "id")
+    private Long id;
+
+    @Column(name = "ticker")
+    private String ticker;
 
     @Column(name = "price")
     private BigDecimal price;
@@ -48,12 +47,15 @@ public class RealtimeQuote {
     @Column(name = "previous_close")
     private BigDecimal previousClose;
 
+    @Column(name = "quote_timestamp")
+    private OffsetDateTime quoteTimestamp;
+
     protected RealtimeQuote() {
         // JPA
     }
 
     public String getTicker() {
-        return id.ticker;
+        return ticker;
     }
 
     public BigDecimal getPrice() {
@@ -85,32 +87,6 @@ public class RealtimeQuote {
     }
 
     public OffsetDateTime getQuoteTimestamp() {
-        return id.quoteTimestamp;
-    }
-
-    @Embeddable
-    public static class Id implements Serializable {
-
-        @Column(name = "ticker")
-        private String ticker;
-
-        @Column(name = "quote_timestamp")
-        private OffsetDateTime quoteTimestamp;
-
-        protected Id() {
-            // JPA
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Id id)) return false;
-            return Objects.equals(ticker, id.ticker) && Objects.equals(quoteTimestamp, id.quoteTimestamp);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(ticker, quoteTimestamp);
-        }
+        return quoteTimestamp;
     }
 }

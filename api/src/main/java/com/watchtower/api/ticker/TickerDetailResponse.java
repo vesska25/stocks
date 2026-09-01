@@ -3,6 +3,7 @@ package com.watchtower.api.ticker;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 public record TickerDetailResponse(
@@ -47,7 +48,7 @@ public record TickerDetailResponse(
             BigDecimal low52w,
             BigDecimal positionInRange,
             @JsonInclude(JsonInclude.Include.NON_NULL) @JsonRawValue String signals,
-            OffsetDateTime computedAt) {
+            LocalDateTime computedAt) {
 
         static Technicals from(AnalyticsResult a) {
             return new Technicals(
@@ -64,7 +65,7 @@ public record TickerDetailResponse(
             BigDecimal revenueGrowthYoy,
             BigDecimal profitMargin,
             BigDecimal forwardEpsEstimate,
-            BigDecimal fundamentalsScore,
+            Integer fundamentalsScore,
             @JsonInclude(JsonInclude.Include.NON_NULL) @JsonRawValue String epsSurpriseLast4,
             @JsonInclude(JsonInclude.Include.NON_NULL) @JsonRawValue String fundamentalsSignals) {
 
