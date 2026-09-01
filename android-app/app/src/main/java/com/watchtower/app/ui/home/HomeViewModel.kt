@@ -20,6 +20,8 @@ data class HomeUiState(
     val sortKey: SortKey = SortKey.SCORE,
     val sortAscending: Boolean = false,
     val filterIndustry: String? = null,
+    val searchActive: Boolean = false,
+    val searchQuery: String = "",
 ) {
     val industries: List<String>
         // A couple of rows in the source DB have the literal string "null"
@@ -34,7 +36,16 @@ data class HomeUiState(
 
     val rows: List<TickerSummary>
         get() {
-            val filtered = if (filterIndustry == null) tickers else tickers.filter { it.industry == filterIndustry }
+            val byIndustry = if (filterIndustry == null) tickers else tickers.filter { it.industry == filterIndustry }
+            val query = searchQuery.trim()
+            val filtered = if (query.isEmpty()) {
+                byIndustry
+            } else {
+                byIndustry.filter {
+                    it.ticker.contains(query, ignoreCase = true) ||
+                        it.name?.contains(query, ignoreCase = true) == true
+                }
+            }
             val sorted = when (sortKey) {
                 SortKey.SYMBOL -> filtered.sortedBy { it.ticker }
                 SortKey.PRICE -> filtered.sortedBy { it.price ?: Double.NEGATIVE_INFINITY }
@@ -85,5 +96,17 @@ class HomeViewModel(private val repository: WatchtowerRepository) : ViewModel() 
 
     fun setFilter(industry: String?) {
         _uiState.value = _uiState.value.copy(filterIndustry = industry)
+    }
+
+    fun openSearch() {
+        _uiState.value = _uiState.value.copy(searchActive = true)
+    }
+
+    fun closeSearch() {
+        _uiState.value = _uiState.value.copy(searchActive = false, searchQuery = "")
+    }
+
+    fun setSearchQuery(query: String) {
+        _uiState.value = _uiState.value.copy(searchQuery = query)
     }
 }
