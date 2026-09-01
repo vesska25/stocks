@@ -6,6 +6,15 @@ import java.time.format.DateTimeParseException
 import java.util.Locale
 import kotlin.math.abs
 
+/**
+ * Some rows in the source DB have the literal string "null" stored instead
+ * of a real SQL NULL (a pipeline data-quality issue, seen for a couple of
+ * tickers in production) — treat it the same as missing rather than
+ * rendering the word "null" on screen.
+ */
+fun String?.orBlankIfLiteralNull(): String? =
+    this?.takeUnless { it.equals("null", ignoreCase = true) }
+
 fun formatPrice(price: Double?): String =
     price?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
 

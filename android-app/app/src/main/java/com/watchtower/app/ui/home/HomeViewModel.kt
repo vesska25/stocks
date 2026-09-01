@@ -21,7 +21,13 @@ data class HomeUiState(
     val sortAscending: Boolean = false,
     val filterIndustry: String? = null,
 ) {
-    val industries: List<String> get() = tickers.mapNotNull { it.industry }.distinct().sorted()
+    val industries: List<String>
+        // A couple of rows in the source DB have the literal string "null"
+        // instead of a real SQL NULL — filter it out so it never shows up
+        // as a selectable filter chip.
+        get() = tickers.mapNotNull { it.industry }
+            .filterNot { it.equals("null", ignoreCase = true) }
+            .distinct().sorted()
 
     val movers: List<TickerSummary>
         get() = tickers.sortedByDescending { row -> row.changePct?.let { kotlin.math.abs(it) } ?: 0.0 }.take(4)

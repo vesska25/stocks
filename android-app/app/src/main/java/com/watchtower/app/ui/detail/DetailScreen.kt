@@ -45,6 +45,7 @@ import com.watchtower.app.ui.components.bottomHairline
 import com.watchtower.app.ui.components.formatChangePct
 import com.watchtower.app.ui.components.formatPrice
 import com.watchtower.app.ui.components.formatRelativeTime
+import com.watchtower.app.ui.components.orBlankIfLiteralNull
 import com.watchtower.app.ui.theme.AccentTint11
 import com.watchtower.app.ui.theme.HairlineFaint
 import com.watchtower.app.ui.theme.HairlineOnDark
@@ -75,7 +76,9 @@ fun DetailScreen(ticker: String, onBack: () -> Unit) {
             }
             Column {
                 Text(ticker, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
-                state.detail?.name?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = TextMuted) }
+                state.detail?.name.orBlankIfLiteralNull()?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                }
             }
         }
 

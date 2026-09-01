@@ -46,6 +46,7 @@ import com.watchtower.app.ui.components.bottomHairline
 import com.watchtower.app.ui.components.formatChangePct
 import com.watchtower.app.ui.components.formatPrice
 import com.watchtower.app.ui.components.formatRelativeTime
+import com.watchtower.app.ui.components.orBlankIfLiteralNull
 import com.watchtower.app.ui.theme.AccentTint06
 import com.watchtower.app.ui.theme.HairlineOnDark
 import com.watchtower.app.ui.theme.RingOuterTechnical
@@ -269,7 +270,7 @@ private fun WatchlistRow(row: TickerSummary, onClick: () -> Unit) {
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(row.ticker, color = TextPrimary, fontWeight = FontWeight.SemiBold)
-                row.industry?.let {
+                row.industry.orBlankIfLiteralNull()?.let {
                     Spacer(Modifier.width(6.dp))
                     Text(
                         it,
@@ -279,7 +280,7 @@ private fun WatchlistRow(row: TickerSummary, onClick: () -> Unit) {
                     )
                 }
             }
-            row.name?.let {
+            row.name.orBlankIfLiteralNull()?.let {
                 Text(it, color = TextMuted, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
