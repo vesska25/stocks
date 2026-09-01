@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.Watchtower" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#101315</item>
+        <item name="android:navigationBarColor">#101315</item>
+        <item name="android:windowBackground">#101315</item>
+    </style>
+</resources>

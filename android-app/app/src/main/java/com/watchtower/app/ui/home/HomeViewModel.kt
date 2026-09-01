@@ -1,0 +1,79 @@
+package com.watchtower.app.ui.home
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.watchtower.app.data.WatchtowerRepository
+import com.watchtower.app.data.model.DigestSummary
+import com.watchtower.app.data.model.TickerSummary
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+
+enum class SortKey { SYMBOL, PRICE, CHANGE, SCORE }
+
+data class HomeUiState(
+    val isLoading: Boolean = true,
+    val error: String? = null,
+    val tickers: List<TickerSummary> = emptyList(),
+    val latestDigest: DigestSummary? = null,
+    val sortKey: SortKey = SortKey.SCORE,
+    val sortAscending: Boolean = false,
+    val filterIndustry: String? = null,
+) {
+    val industries: List<String> get() = tickers.mapNotNull { it.industry }.distinct().sorted()
+
+    val movers: List<TickerSummary>
+        get() = tickers.sortedByDescending { row -> row.changePct?.let { kotlin.math.abs(it) } ?: 0.0 }.take(4)
+
+    val rows: List<TickerSummary>
+        get() {
+            val filtered = if (filterIndustry == null) tickers else tickers.filter { it.industry == filterIndustry }
+            val sorted = when (sortKey) {
+                SortKey.SYMBOL -> filtered.sortedBy { it.ticker }
+                SortKey.PRICE -> filtered.sortedBy { it.price ?: Double.NEGATIVE_INFINITY }
+                SortKey.CHANGE -> filtered.sortedBy { it.changePct ?: Double.NEGATIVE_INFINITY }
+                SortKey.SCORE -> filtered.sortedBy { it.compositeScore ?: Double.NEGATIVE_INFINITY }
+            }
+            return if (sortAscending) sorted else sorted.reversed()
+        }
+}
+
+class HomeViewModel(private val repository: WatchtowerRepository) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+        refresh()
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            val tickersResult = repository.getTickers()
+            val digestResult = repository.getDigests(page = 0, size = 1)
+
+            _uiState.value = _uiState.value.copy(
+                isLoading = false,
+                error = tickersResult.exceptionOrNull()?.message,
+                tickers = tickersResult.getOrDefault(emptyList()),
+                latestDigest = digestResult.getOrNull()?.content?.firstOrNull(),
+            )
+        }
+    }
+
+    fun setSort(key: SortKey) {
+        val current = _uiState.value
+        _uiState.value = if (current.sortKey == key) {
+            current.copy(sortAscending = !current.sortAscending)
+        } else {
+            current.copy(sortKey = key, sortAscending = key == SortKey.SYMBOL)
+        }
+    }
+
+    fun setFilter(industry: String?) {
+        _uiState.value = _uiState.value.copy(filterIndustry = industry)
+    }
+}
