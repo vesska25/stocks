@@ -50,14 +50,24 @@ fun WatchtowerNavHost() {
             )
         }
         composable(Routes.SETTINGS) {
-            SettingsScreen(onSaved = {
-                navController.navigate(Routes.HOME) {
-                    // Clears the whole back stack (using the graph's own id, since
-                    // routes here are String-based, not Int destination ids) so
-                    // Settings never reappears on back-press after a successful save.
-                    popUpTo(navController.graph.id) { inclusive = true }
-                }
-            })
+            SettingsScreen(
+                onSaved = {
+                    navController.navigate(Routes.HOME) {
+                        // Clears the whole back stack (using the graph's own id, since
+                        // routes here are String-based, not Int destination ids) so
+                        // Settings never reappears on back-press after a successful save.
+                        popUpTo(navController.graph.id) { inclusive = true }
+                    }
+                },
+                // No back option when Settings is the forced first-run screen
+                // (nothing pushed it, so there's nothing to go back to) —
+                // only shown when opened via Home's gear icon.
+                onBack = if (navController.previousBackStackEntry != null) {
+                    { navController.popBackStack() }
+                } else {
+                    null
+                },
+            )
         }
         composable(Routes.DIGESTS) {
             DigestHistoryScreen(

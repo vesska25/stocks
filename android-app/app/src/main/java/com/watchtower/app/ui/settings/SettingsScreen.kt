@@ -2,15 +2,21 @@ package com.watchtower.app.ui.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
@@ -21,11 +27,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.watchtower.app.WatchtowerApplication
+import com.watchtower.app.ui.theme.RingOuterTechnical
 import com.watchtower.app.ui.theme.TextMuted
 import com.watchtower.app.ui.theme.TextPrimary
 
 @Composable
-fun SettingsScreen(onSaved: () -> Unit) {
+fun SettingsScreen(onSaved: () -> Unit, onBack: (() -> Unit)? = null) {
     val app = LocalContext.current.applicationContext as WatchtowerApplication
     val factory = viewModelFactory {
         initializer { SettingsViewModel(app.settingsRepository) }
@@ -40,6 +47,15 @@ fun SettingsScreen(onSaved: () -> Unit) {
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
+        // No back option when this is the forced first-run screen (nothing
+        // to go back to yet) — only shown when reached via the gear icon.
+        if (onBack != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = RingOuterTechnical)
+                }
+            }
+        }
         Text("Connect to your API", style = MaterialTheme.typography.titleLarge, color = TextPrimary)
         Text(
             "Enter the base URL and API key for your watchtower-api instance.",
